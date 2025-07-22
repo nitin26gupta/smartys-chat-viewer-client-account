@@ -109,7 +109,7 @@ export const useChatData = () => {
             user_id: user.user_id,
             user_name: user.user_name || 'Unknown',
             phone_number: user.phone_number || '',
-            agent_on: user.switch_on ?? true,
+            agent_on: user.agent_on ?? true,
           },
           session_ids: sessionIds,
         };

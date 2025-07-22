@@ -252,28 +252,28 @@ export type Database = {
       }
       user_info: {
         Row: {
+          agent_on: boolean | null
           created_at: string | null
           id: number
           phone_number: string | null
-          switch_on: boolean | null
           updated_at: string | null
           user_id: string
           user_name: string | null
         }
         Insert: {
+          agent_on?: boolean | null
           created_at?: string | null
           id?: number
           phone_number?: string | null
-          switch_on?: boolean | null
           updated_at?: string | null
           user_id?: string
           user_name?: string | null
         }
         Update: {
+          agent_on?: boolean | null
           created_at?: string | null
           id?: number
           phone_number?: string | null
-          switch_on?: boolean | null
           updated_at?: string | null
           user_id?: string
           user_name?: string | null

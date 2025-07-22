@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { User, Phone, Calendar, MessageSquare, ExternalLink, Bot } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserInfo {
@@ -30,6 +30,11 @@ export const UserInfoPanel = ({
 }: UserInfoPanelProps) => {
   const [agentStatus, setAgentStatus] = useState(userInfo?.agent_on ?? true);
   const { toast } = useToast();
+  
+  // Update agentStatus when userInfo changes
+  useEffect(() => {
+    setAgentStatus(userInfo?.agent_on ?? true);
+  }, [userInfo?.agent_on]);
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -54,7 +59,7 @@ export const UserInfoPanel = ({
     try {
       const { error } = await supabase
         .from('user_info')
-        .update({ switch_on: checked })
+        .update({ agent_on: checked })
         .eq('user_id', userInfo.user_id);
 
       if (error) {
