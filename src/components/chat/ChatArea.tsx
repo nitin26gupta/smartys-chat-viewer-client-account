@@ -55,7 +55,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
     const chatText = messages
       .map((msg) => {
         const message = msg.message as any;
-        const sender = message?.type === 'ai' ? 'AI' : 'Customer';
+        const sender = message?.type === 'ai' && message?.sender_category === 'human_agent' ? 'Support' : message?.type === 'ai' ? 'AI' : 'Customer';
         const time = formatTimestamp(message?.timestamp);
         const content = message?.type === 'image' 
           ? `[Image: ${message?.url}]` 
@@ -89,29 +89,29 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
     }
   };
 
-  const MessageBubble = ({ message, isAI, isSupportReply }: { message: ChatMessage; isAI: boolean; isSupportReply: boolean }) => {
+  const MessageBubble = ({ message, isAI, isHumanAgent }: { message: ChatMessage; isAI: boolean; isHumanAgent: boolean }) => {
     const msg = message.message as any;
     const isImage = msg?.type === 'image';
     
     return (
-      <div className={cn("flex items-start space-x-3 animate-fade-in", (isAI || isSupportReply) ? "flex-row" : "flex-row-reverse space-x-reverse")}>
+      <div className={cn("flex items-start space-x-3 animate-fade-in", (isAI || isHumanAgent) ? "flex-row" : "flex-row-reverse space-x-reverse")}>
         <div className={cn(
           "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center", 
-          isAI ? "bg-primary/10" : isSupportReply ? "bg-green-100" : "bg-secondary"
+          isHumanAgent ? "bg-green-100" : isAI ? "bg-primary/10" : "bg-secondary"
         )}>
-          {isAI ? (
-            <Bot className="h-4 w-4 text-primary" />
-          ) : isSupportReply ? (
+          {isHumanAgent ? (
             <User className="h-4 w-4 text-green-600" />
+          ) : isAI ? (
+            <Bot className="h-4 w-4 text-primary" />
           ) : (
             <User className="h-4 w-4" />
           )}
         </div>
         
-        <div className={cn("max-w-[70%] space-y-1", (isAI || isSupportReply) ? "items-start" : "items-end")}>
+        <div className={cn("max-w-[70%] space-y-1", (isAI || isHumanAgent) ? "items-start" : "items-end")}>
           <div className={cn(
             "px-4 py-2 rounded-lg", 
-            isAI ? "bg-muted" : isSupportReply ? "bg-green-500 text-white" : "bg-primary text-primary-foreground"
+            isHumanAgent ? "bg-green-500 text-white" : isAI ? "bg-muted" : "bg-primary text-primary-foreground"
           )}>
             {isImage ? (
               <div className="space-y-2">
@@ -148,9 +148,9 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             )}
           </div>
           
-          <div className={cn("flex items-center space-x-2 text-xs text-muted-foreground", (isAI || isSupportReply) ? "justify-start" : "justify-end")}>
+          <div className={cn("flex items-center space-x-2 text-xs text-muted-foreground", (isAI || isHumanAgent) ? "justify-start" : "justify-end")}>
             <span>{formatTimestamp(msg?.timestamp)}</span>
-            {isSupportReply && <span className="text-green-600">Support</span>}
+            {isHumanAgent && <span className="text-green-600">Support</span>}
           </div>
         </div>
       </div>
@@ -236,14 +236,14 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
         ) : (
           messages.map((message) => {
             const msg = message.message as any;
-            const isAI = msg?.type === 'ai';
-            const isSupportReply = msg?.type === 'support_reply';
+            const isAI = msg?.type === 'ai' && msg?.sender_category !== 'human_agent';
+            const isHumanAgent = msg?.type === 'ai' && msg?.sender_category === 'human_agent';
             return (
               <MessageBubble
                 key={message.id}
                 message={message}
                 isAI={isAI}
-                isSupportReply={isSupportReply}
+                isHumanAgent={isHumanAgent}
               />
             );
           })
