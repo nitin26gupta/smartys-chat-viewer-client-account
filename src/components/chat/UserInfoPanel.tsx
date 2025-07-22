@@ -2,7 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { User, Phone, Calendar, MessageSquare, ExternalLink } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { User, Phone, Calendar, MessageSquare, ExternalLink, Bot } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserInfo {
   user_id: string;
@@ -10,6 +14,7 @@ interface UserInfo {
   phone_number: string;
   created_at?: string;
   updated_at?: string;
+  agent_on?: boolean;
 }
 
 interface UserInfoPanelProps {
@@ -23,6 +28,8 @@ export const UserInfoPanel = ({
   selectedConversation, 
   messageCount = 0 
 }: UserInfoPanelProps) => {
+  const [agentStatus, setAgentStatus] = useState(userInfo?.agent_on ?? true);
+  const { toast } = useToast();
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -38,6 +45,40 @@ export const UserInfoPanel = ({
       const cleanPhone = userInfo.phone_number.replace(/\D/g, '');
       const whatsappUrl = `https://wa.me/${cleanPhone}`;
       window.open(whatsappUrl, '_blank');
+    }
+  };
+
+  const handleAgentToggle = async (checked: boolean) => {
+    if (!userInfo?.user_id) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_info')
+        .update({ switch_on: checked })
+        .eq('user_id', userInfo.user_id);
+
+      if (error) {
+        console.error('Error updating agent status:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update AI agent status",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setAgentStatus(checked);
+      toast({
+        title: "Success",
+        description: `AI agent ${checked ? 'enabled' : 'disabled'} for this conversation`,
+      });
+    } catch (error) {
+      console.error('Error updating agent status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update AI agent status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -108,6 +149,30 @@ export const UserInfoPanel = ({
             <ExternalLink className="h-4 w-4 mr-2" />
             Open in WhatsApp
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* AI Agent Control */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center">
+            <Bot className="h-4 w-4 mr-2" />
+            AI Agent Control
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="text-sm font-medium">AI Agent Status</span>
+              <p className="text-xs text-muted-foreground">
+                {agentStatus ? 'AI responses enabled' : 'AI responses disabled'}
+              </p>
+            </div>
+            <Switch
+              checked={agentStatus}
+              onCheckedChange={handleAgentToggle}
+            />
+          </div>
         </CardContent>
       </Card>
 
