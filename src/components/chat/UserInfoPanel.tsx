@@ -87,7 +87,7 @@ export const UserInfoPanel = ({
     }
   };
 
-  const handleSendTemplate = async () => {
+  const handleSendTemplate = async (templateName: string, templateDisplayName: string) => {
     if (!userInfo?.phone_number) {
       toast({
         title: "Error",
@@ -106,7 +106,7 @@ export const UserInfoPanel = ({
         body: JSON.stringify({
           customer_name: userInfo.user_name,
           phone_number: userInfo.phone_number,
-          template_name: "smartys_share_vehicle_registration_copy"
+          template_name: templateName
         }),
       });
 
@@ -116,7 +116,7 @@ export const UserInfoPanel = ({
 
       toast({
         title: "Template Sent",
-        description: "Vehicle registration template has been sent to the customer",
+        description: `${templateDisplayName} has been sent to the customer`,
       });
     } catch (error) {
       console.error('Error sending template:', error);
@@ -233,17 +233,28 @@ export const UserInfoPanel = ({
         <CardContent className="space-y-3">
           <div>
             <p className="text-xs text-muted-foreground mb-3">
-              Send template to resume conversation after 24 hours of inactivity
+              Choose a template to send to the customer
             </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full"
-              onClick={handleSendTemplate}
-            >
-              <Send className="h-4 w-4 mr-2" />
-              Send Vehicle Registration Template
-            </Button>
+            <div className="space-y-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => handleSendTemplate("smartys_share_vehicle_registration_copy", "Vehicle Registration Template")}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send Vehicle Registration Template
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => handleSendTemplate("no_response_24_hours", "24 Hour No Response Template")}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                Send 24 Hour No Response Template
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
