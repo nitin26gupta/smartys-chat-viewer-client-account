@@ -106,8 +106,7 @@ export const UserInfoPanel = ({
         body: JSON.stringify({
           customer_name: userInfo.user_name,
           phone_number: userInfo.phone_number,
-          template_name: "smartys_share_vehicle_registration_copy",
-          mobile_number: userInfo.phone_number
+          template_name: "smartys_share_vehicle_registration_copy"
         }),
       });
 
