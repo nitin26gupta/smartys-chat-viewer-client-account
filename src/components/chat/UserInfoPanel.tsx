@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
-import { User, Phone, Calendar, MessageSquare, ExternalLink, Bot } from 'lucide-react';
+import { User, Phone, Calendar, MessageSquare, ExternalLink, Bot, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
@@ -82,6 +82,46 @@ export const UserInfoPanel = ({
       toast({
         title: "Error",
         description: "Failed to update AI agent status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendTemplate = async () => {
+    if (!userInfo?.phone_number) {
+      toast({
+        title: "Error",
+        description: "No phone number available for this user",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('https://jkdxs.app.n8n.cloud/webhook/be19b868-b1b4-4ae5-9752-6d93eec0de34', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template_name: "smartys_share_vehicle_registration_copy",
+          mobile_number: userInfo.phone_number
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send template');
+      }
+
+      toast({
+        title: "Template Sent",
+        description: "Vehicle registration template has been sent to the customer",
+      });
+    } catch (error) {
+      console.error('Error sending template:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send template. Please try again.",
         variant: "destructive",
       });
     }
@@ -177,6 +217,32 @@ export const UserInfoPanel = ({
               checked={agentStatus}
               onCheckedChange={handleAgentToggle}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Template Actions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center">
+            <Send className="h-4 w-4 mr-2" />
+            Template Actions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <p className="text-xs text-muted-foreground mb-3">
+              Send template to resume conversation after 24 hours of inactivity
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full"
+              onClick={handleSendTemplate}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              Send Vehicle Registration Template
+            </Button>
           </div>
         </CardContent>
       </Card>
