@@ -183,21 +183,24 @@ export const useChatData = () => {
           console.log('New message received via real-time:', payload);
           const newMessage = payload.new as ChatMessage;
           
-          // Update messages if viewing the relevant conversation
-          setMessages(prevMessages => {
-            // Get the current conversations to check if the message belongs to selected conversation
-            const currentConversations = conversations;
-            const conversation = currentConversations.find(c => c.user_id === selectedConversation);
-            if (conversation && conversation.session_ids.includes(newMessage.session_id)) {
-              console.log('Adding message to current conversation');
-              return [...prevMessages, newMessage];
-            }
-            return prevMessages;
-          });
-          
           // Always refresh conversations to update last message and counts
           console.log('Refreshing conversations due to new message');
           fetchConversations();
+          
+          // If we're currently viewing a conversation, check if this message belongs to it
+          setSelectedConversation(currentSelectedConversation => {
+            if (currentSelectedConversation) {
+              setConversations(currentConversations => {
+                const conversation = currentConversations.find(c => c.user_id === currentSelectedConversation);
+                if (conversation && conversation.session_ids.includes(newMessage.session_id)) {
+                  console.log('Adding message to current conversation');
+                  setMessages(prevMessages => [...prevMessages, newMessage]);
+                }
+                return currentConversations;
+              });
+            }
+            return currentSelectedConversation;
+          });
         }
       )
       .subscribe();
@@ -208,7 +211,7 @@ export const useChatData = () => {
       console.log('Cleaning up real-time subscription');
       supabase.removeChannel(channel);
     };
-  }, []); // Remove dependencies to prevent constant re-subscriptions
+  }, []); // Empty dependency array to prevent constant re-subscriptions
 
   useEffect(() => {
     fetchConversations();
