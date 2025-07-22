@@ -237,8 +237,9 @@ export const useChatData = () => {
       const sessionId = conversation.session_ids[conversation.session_ids.length - 1];
       
       const replyMessage = {
-        type: 'support_reply',
+        type: 'ai',
         content: replyText,
+        sender_category: 'human_agent',
         timestamp: new Date().toISOString(),
       };
 
