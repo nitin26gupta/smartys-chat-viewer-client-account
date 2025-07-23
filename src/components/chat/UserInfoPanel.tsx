@@ -98,7 +98,7 @@ export const UserInfoPanel = ({
     }
 
     try {
-      const response = await fetch('https://jkdxs.app.n8n.cloud/webhook/be19b868-b1b4-4ae5-9752-6d93eec0de34', {
+      const response = await fetch('https://smartys.app.n8n.cloud/webhook/be19b868-b1b4-4ae5-9752-6d93eec0de34', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
