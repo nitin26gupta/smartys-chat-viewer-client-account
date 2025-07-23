@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, UserPlus, Trash2, Mail, Calendar, Clock } from 'lucide-react';
+import { Loader2, UserPlus, Trash2, Mail, Calendar, Clock, RefreshCw, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface User {
@@ -25,6 +25,7 @@ interface Invitation {
   created_at: string;
   used_at: string | null;
   invited_by: string;
+  invitation_token: string;
 }
 
 const UserManagement = () => {
@@ -34,6 +35,8 @@ const UserManagement = () => {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  const [resendLoading, setResendLoading] = useState<string | null>(null);
+  const [removeInviteLoading, setRemoveInviteLoading] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -191,6 +194,69 @@ const UserManagement = () => {
     setDeleteLoading(null);
   };
 
+  const handleResendInvitation = async (invitation: Invitation) => {
+    setResendLoading(invitation.id);
+
+    try {
+      const inviteLink = `${window.location.origin}/auth?token=${invitation.invitation_token}`;
+      
+      const { error: emailError } = await supabase.functions.invoke('send-invitation-email', {
+        body: {
+          email: invitation.email,
+          inviteLink: inviteLink,
+          inviterName: user?.email?.split('@')[0] || 'Admin'
+        }
+      });
+
+      if (emailError) throw emailError;
+
+      toast({
+        title: "Invitation resent",
+        description: `Invitation email resent to ${invitation.email}`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to resend invitation",
+        variant: "destructive",
+      });
+    }
+
+    setResendLoading(null);
+  };
+
+  const handleRemoveInvitation = async (invitationId: string) => {
+    if (!confirm('Are you sure you want to remove this invitation?')) {
+      return;
+    }
+
+    setRemoveInviteLoading(invitationId);
+
+    try {
+      const { error } = await supabase
+        .from('user_invitations')
+        .delete()
+        .eq('id', invitationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Invitation removed",
+        description: "The invitation has been removed",
+      });
+
+      fetchInvitations();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove invitation",
+        variant: "destructive",
+      });
+    }
+
+    setRemoveInviteLoading(null);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -297,15 +363,47 @@ const UserManagement = () => {
             <div className="space-y-4">
               {invitations.filter(inv => !inv.used_at).map((invitation) => (
                 <div key={invitation.id} className="p-3 border rounded-lg">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">{invitation.email}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{invitation.email}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        <Clock className="inline h-3 w-3 mr-1" />
+                        Expires {new Date(invitation.expires_at).toLocaleDateString()}
+                      </p>
+                      <Badge variant="outline">Pending</Badge>
+                    </div>
+                    <div className="flex items-center gap-2 ml-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleResendInvitation(invitation)}
+                        disabled={resendLoading === invitation.id}
+                        title="Resend invitation email"
+                      >
+                        {resendLoading === invitation.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveInvitation(invitation.id)}
+                        disabled={removeInviteLoading === invitation.id}
+                        title="Remove invitation"
+                      >
+                        {removeInviteLoading === invitation.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <X className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    <Clock className="inline h-3 w-3 mr-1" />
-                    Expires {new Date(invitation.expires_at).toLocaleDateString()}
-                  </p>
-                  <Badge variant="outline">Pending</Badge>
                 </div>
               ))}
               {invitations.filter(inv => !inv.used_at).length === 0 && (
