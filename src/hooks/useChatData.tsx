@@ -205,9 +205,16 @@ export const useChatData = () => {
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Real-time subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        } else if (status === 'CHANNEL_ERROR') {
+          console.error('Error subscribing to real-time updates');
+        }
+      });
 
-    console.log('Real-time subscription status:', channel);
+    console.log('Real-time channel created:', channel);
 
     return () => {
       console.log('Cleaning up real-time subscription');
