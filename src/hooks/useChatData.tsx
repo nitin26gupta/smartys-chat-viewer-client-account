@@ -240,26 +240,7 @@ export const useChatData = () => {
         throw new Error('No active session found for this user');
       }
 
-      // Use the most recent session ID for the reply
-      const sessionId = conversation.session_ids[conversation.session_ids.length - 1];
-      
-      const replyMessage = {
-        type: 'ai',
-        content: replyText,
-        sender_category: 'human_agent',
-        timestamp: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from('smartys_chat_histories')
-        .insert({
-          session_id: sessionId,
-          message: replyMessage,
-        });
-
-      if (error) throw error;
-
-      // Trigger webhook after successful message send
+      // Call webhook directly - the workflow will handle storing the message
       try {
         const webhookPayload = {
           mobile_number: conversation.user_info?.phone_number || '',
@@ -275,18 +256,25 @@ export const useChatData = () => {
         });
 
         console.log('Webhook triggered successfully:', webhookPayload);
+        
+        toast({
+          title: "Reply sent",
+          description: "Your message has been sent successfully",
+        });
+
+        // Refresh messages to show any updates from the workflow
+        setTimeout(() => {
+          fetchMessages(userId);
+        }, 1000);
+        
       } catch (webhookError) {
         console.error('Error triggering webhook:', webhookError);
-        // Don't fail the message send if webhook fails
+        toast({
+          title: "Error sending reply",
+          description: "Failed to send your message",
+          variant: "destructive",
+        });
       }
-
-      toast({
-        title: "Reply sent",
-        description: "Your message has been sent successfully",
-      });
-
-      // Refresh messages
-      fetchMessages(userId);
     } catch (error) {
       console.error('Error sending reply:', error);
       toast({
