@@ -58,6 +58,7 @@ export type Database = {
       }
       user_info: {
         Row: {
+          agent_on: boolean | null
           created_at: string | null
           id: number
           phone_number: string | null
@@ -66,6 +67,7 @@ export type Database = {
           user_name: string | null
         }
         Insert: {
+          agent_on?: boolean | null
           created_at?: string | null
           id?: number
           phone_number?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           user_name?: string | null
         }
         Update: {
+          agent_on?: boolean | null
           created_at?: string | null
           id?: number
           phone_number?: string | null
