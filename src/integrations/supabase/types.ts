@@ -14,167 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      cars: {
-        Row: {
-          body_style: string | null
-          car_id: number
-          engine: string | null
-          fuel_type: string | null
-          generation: number | null
-          horsepower: number | null
-          manufacturer_id: number | null
-          model: string | null
-          model_year_end: number | null
-          model_year_start: number | null
-          msrp_eur: number | null
-        }
-        Insert: {
-          body_style?: string | null
-          car_id?: number
-          engine?: string | null
-          fuel_type?: string | null
-          generation?: number | null
-          horsepower?: number | null
-          manufacturer_id?: number | null
-          model?: string | null
-          model_year_end?: number | null
-          model_year_start?: number | null
-          msrp_eur?: number | null
-        }
-        Update: {
-          body_style?: string | null
-          car_id?: number
-          engine?: string | null
-          fuel_type?: string | null
-          generation?: number | null
-          horsepower?: number | null
-          manufacturer_id?: number | null
-          model?: string | null
-          model_year_end?: number | null
-          model_year_start?: number | null
-          msrp_eur?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "cars_manufacturer_id_fkey"
-            columns: ["manufacturer_id"]
-            isOneToOne: false
-            referencedRelation: "manufacturers"
-            referencedColumns: ["manufacturer_id"]
-          },
-        ]
-      }
-      manufacturers: {
-        Row: {
-          country: string | null
-          manufacturer_id: number
-          name: string
-        }
-        Insert: {
-          country?: string | null
-          manufacturer_id?: number
-          name: string
-        }
-        Update: {
-          country?: string | null
-          manufacturer_id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      parts: {
-        Row: {
-          brand: string | null
-          category: string | null
-          cost_eur: number | null
-          description: string | null
-          name: string | null
-          part_id: string
-          reliability_score: number | null
-          retail_price_eur: number | null
-          stock_qty: number | null
-        }
-        Insert: {
-          brand?: string | null
-          category?: string | null
-          cost_eur?: number | null
-          description?: string | null
-          name?: string | null
-          part_id: string
-          reliability_score?: number | null
-          retail_price_eur?: number | null
-          stock_qty?: number | null
-        }
-        Update: {
-          brand?: string | null
-          category?: string | null
-          cost_eur?: number | null
-          description?: string | null
-          name?: string | null
-          part_id?: string
-          reliability_score?: number | null
-          retail_price_eur?: number | null
-          stock_qty?: number | null
-        }
-        Relationships: []
-      }
-      parts_compatibility: {
-        Row: {
-          car_id: number
-          part_id: string
-        }
-        Insert: {
-          car_id: number
-          part_id: string
-        }
-        Update: {
-          car_id?: number
-          part_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "parts_compatibility_car_id_fkey"
-            columns: ["car_id"]
-            isOneToOne: false
-            referencedRelation: "cars"
-            referencedColumns: ["car_id"]
-          },
-          {
-            foreignKeyName: "parts_compatibility_part_id_fkey"
-            columns: ["part_id"]
-            isOneToOne: false
-            referencedRelation: "parts"
-            referencedColumns: ["part_id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          created_at: string
-          display_name: string | null
-          id: string
-          role: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          role?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          display_name?: string | null
-          id?: string
-          role?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       session_user_mapping: {
         Row: {
           created_at: string | null
@@ -186,7 +25,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           id?: number
-          session_id?: string
+          session_id: string
           updated_at?: string | null
           user_id: string
         }
@@ -196,39 +35,6 @@ export type Database = {
           session_id?: string
           updated_at?: string | null
           user_id?: string
-        }
-        Relationships: []
-      }
-      smartys_autozubehoer_knowledgebase: {
-        Row: {
-          content: string | null
-          doc_id: string
-          embedding: string | null
-          metadata: Json | null
-        }
-        Insert: {
-          content?: string | null
-          doc_id: string
-          embedding?: string | null
-          metadata?: Json | null
-        }
-        Update: {
-          content?: string | null
-          doc_id?: string
-          embedding?: string | null
-          metadata?: Json | null
-        }
-        Relationships: []
-      }
-      Smartys_Autozubehör_Knowledgebase: {
-        Row: {
-          text: string | null
-        }
-        Insert: {
-          text?: string | null
-        }
-        Update: {
-          text?: string | null
         }
         Relationships: []
       }
@@ -252,7 +58,6 @@ export type Database = {
       }
       user_info: {
         Row: {
-          agent_on: boolean | null
           created_at: string | null
           id: number
           phone_number: string | null
@@ -261,16 +66,14 @@ export type Database = {
           user_name: string | null
         }
         Insert: {
-          agent_on?: boolean | null
           created_at?: string | null
           id?: number
           phone_number?: string | null
           updated_at?: string | null
-          user_id?: string
+          user_id: string
           user_name?: string | null
         }
         Update: {
-          agent_on?: boolean | null
           created_at?: string | null
           id?: number
           phone_number?: string | null
@@ -285,98 +88,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
