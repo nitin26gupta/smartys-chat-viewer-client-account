@@ -21,19 +21,21 @@ interface UserInfoPanelProps {
   userInfo: UserInfo | null;
   selectedConversation: string | null;
   messageCount?: number;
+  onUserInfoUpdate?: (userId: string) => void;
 }
 
 export const UserInfoPanel = ({ 
   userInfo, 
   selectedConversation, 
-  messageCount = 0 
+  messageCount = 0,
+  onUserInfoUpdate
 }: UserInfoPanelProps) => {
-  const [agentStatus, setAgentStatus] = useState(userInfo?.agent_on ?? true);
+  const [agentStatus, setAgentStatus] = useState(false);
   const { toast } = useToast();
   
   // Update agentStatus when userInfo changes
   useEffect(() => {
-    if (userInfo) {
+    if (userInfo?.user_id) {
       setAgentStatus(userInfo.agent_on ?? true);
     }
   }, [userInfo?.user_id, userInfo?.agent_on]);
@@ -77,6 +79,11 @@ export const UserInfoPanel = ({
           variant: "destructive",
         });
         return;
+      }
+
+      // Refresh the user info to reflect the change
+      if (onUserInfoUpdate) {
+        onUserInfoUpdate(userInfo.user_id);
       }
 
       toast({

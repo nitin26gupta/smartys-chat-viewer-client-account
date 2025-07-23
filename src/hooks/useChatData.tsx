@@ -307,5 +307,9 @@ export const useChatData = () => {
     messagesLoading,
     refreshConversations: fetchConversations,
     sendReply,
+    refreshUserInfo: (userId: string) => {
+      // Refresh conversations to get updated user info
+      fetchConversations();
+    },
   };
 };

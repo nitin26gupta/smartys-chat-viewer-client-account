@@ -24,7 +24,9 @@ const Index = () => {
     userInfo,
     loading,
     messagesLoading,
+    refreshConversations,
     sendReply,
+    refreshUserInfo,
   } = useChatData();
 
   // Check if user is admin
@@ -206,6 +208,7 @@ const Index = () => {
               userInfo={userInfo}
               selectedConversation={selectedConversation}
               messageCount={messages.length}
+              onUserInfoUpdate={refreshUserInfo}
             />
           </div>
         </div>
