@@ -18,19 +18,40 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [invitationToken, setInvitationToken] = useState('');
   const [validInvitation, setValidInvitation] = useState(false);
+  const [isFirstUser, setIsFirstUser] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Check for invitation token on component mount
+  // Check for invitation token and first user status on component mount
   useEffect(() => {
     const token = searchParams.get('token');
     if (token) {
       setInvitationToken(token);
       validateInvitation(token);
+    } else {
+      checkIfFirstUser();
     }
   }, [searchParams]);
+
+  const checkIfFirstUser = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('user_roles')
+        .select('*', { count: 'exact', head: true });
+      
+      if (error) throw error;
+      
+      // If no users exist, this will be the first user
+      if (count === 0) {
+        setIsFirstUser(true);
+        setValidInvitation(true); // Allow signup for first user
+      }
+    } catch (error) {
+      console.error('Error checking user count:', error);
+    }
+  };
 
   const validateInvitation = async (token: string) => {
     try {
@@ -88,7 +109,7 @@ const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!validInvitation) {
+    if (!validInvitation && !isFirstUser) {
       toast({
         title: "Invalid Invitation",
         description: "You need a valid invitation to create an account.",
@@ -163,8 +184,8 @@ const Auth = () => {
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup" disabled={!validInvitation}>
-                {validInvitation ? 'Create Account' : 'Invitation Required'}
+              <TabsTrigger value="signup" disabled={!validInvitation && !isFirstUser}>
+                {(validInvitation || isFirstUser) ? 'Create Account' : 'Invitation Required'}
               </TabsTrigger>
               <TabsTrigger value="reset">Reset Password</TabsTrigger>
             </TabsList>
@@ -201,7 +222,7 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="signup">
-              {!validInvitation ? (
+              {!validInvitation && !isFirstUser ? (
                 <div className="text-center py-8">
                   <KeyRound className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-medium mb-2">Invitation Required</h3>
@@ -223,13 +244,18 @@ const Auth = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email (from invitation)</Label>
+                    <Label htmlFor="signup-email">
+                      {isFirstUser ? 'Email' : 'Email (from invitation)'}
+                    </Label>
                     <Input
                       id="signup-email"
                       type="email"
                       value={email}
-                      disabled
-                      className="bg-muted"
+                      onChange={isFirstUser ? (e) => setEmail(e.target.value) : undefined}
+                      disabled={!isFirstUser}
+                      className={!isFirstUser ? "bg-muted" : ""}
+                      placeholder={isFirstUser ? "admin@smartys.com" : ""}
+                      required
                     />
                   </div>
                   <div className="space-y-2">
