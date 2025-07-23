@@ -37,16 +37,23 @@ export const useChatData = () => {
   const fetchConversations = async () => {
     try {
       console.log('=== STARTING CONVERSATION FETCH ===');
+      console.log('Current user:', await supabase.auth.getUser());
       
       // Step 1: Get all users from user_info table
       const { data: allUsers, error: userError } = await supabase
         .from('user_info')
         .select('*');
 
-      if (userError) throw userError;
+      console.log('User query result:', { data: allUsers, error: userError });
+      if (userError) {
+        console.error('User fetch error:', userError);
+        throw userError;
+      }
       console.log('Found users:', allUsers?.length);
+      console.log('Users data:', allUsers);
 
       if (!allUsers || allUsers.length === 0) {
+        console.log('No users found, setting empty conversations');
         setConversations([]);
         return;
       }
@@ -63,6 +70,7 @@ export const useChatData = () => {
           .select('session_id')
           .eq('user_id', user.user_id);
 
+        console.log(`Session query result for user ${user.user_id}:`, { data: userSessions, error: sessionError });
         if (sessionError) {
           console.error('Error fetching sessions for user:', user.user_id, sessionError);
           continue;
