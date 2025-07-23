@@ -27,7 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("Sending invitation email to:", email);
 
     const emailResponse = await resend.emails.send({
-      from: "Smartys Chat <nitin26.gupta@gmail.com>", // Using your verified email
+      from: "Smartys Chat <noreply@ekamapps.com>", // Using your verified domain
       to: [email],
       subject: "You're invited to join Smartys Chat",
       html: `
