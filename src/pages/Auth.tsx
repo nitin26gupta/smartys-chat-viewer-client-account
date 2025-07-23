@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,16 +7,60 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, KeyRound } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [invitationToken, setInvitationToken] = useState('');
+  const [validInvitation, setValidInvitation] = useState(false);
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Check for invitation token on component mount
+  useEffect(() => {
+    const token = searchParams.get('token');
+    if (token) {
+      setInvitationToken(token);
+      validateInvitation(token);
+    }
+  }, [searchParams]);
+
+  const validateInvitation = async (token: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_invitations')
+        .select('email, expires_at')
+        .eq('invitation_token', token)
+        .is('used_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .single();
+
+      if (error || !data) {
+        toast({
+          title: "Invalid Invitation",
+          description: "This invitation link is invalid or has expired.",
+          variant: "destructive",
+        });
+        setValidInvitation(false);
+      } else {
+        setEmail(data.email);
+        setValidInvitation(true);
+        toast({
+          title: "Valid Invitation",
+          description: "You can now create your account.",
+        });
+      }
+    } catch (error) {
+      setValidInvitation(false);
+    }
+  };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +87,16 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validInvitation) {
+      toast({
+        title: "Invalid Invitation",
+        description: "You need a valid invitation to create an account.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     const { error } = await signUp(email, password, displayName);
@@ -56,9 +110,34 @@ const Auth = () => {
     } else {
       toast({
         title: "Account created!",
-        description: "Please check your email to confirm your account.",
+        description: "You have been signed in successfully.",
       });
       navigate('/');
+    }
+
+    setLoading(false);
+  };
+
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth?reset=true`,
+    });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Reset email sent",
+        description: "Check your email for password reset instructions.",
+      });
+      setResetEmail('');
     }
 
     setLoading(false);
@@ -82,9 +161,12 @@ const Auth = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signup" disabled={!validInvitation}>
+                {validInvitation ? 'Create Account' : 'Invitation Required'}
+              </TabsTrigger>
+              <TabsTrigger value="reset">Reset Password</TabsTrigger>
             </TabsList>
             
             <TabsContent value="signin">
@@ -119,45 +201,77 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Display Name</Label>
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    value={displayName}
-                    onChange={(e) => setDisplayName(e.target.value)}
-                    placeholder="John Doe"
-                    required
-                  />
+              {!validInvitation ? (
+                <div className="text-center py-8">
+                  <KeyRound className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">Invitation Required</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Account creation is restricted to invited users only. Please contact an administrator to get an invitation link.
+                  </p>
                 </div>
+              ) : (
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Display Name</Label>
+                    <Input
+                      id="signup-name"
+                      type="text"
+                      value={displayName}
+                      onChange={(e) => setDisplayName(e.target.value)}
+                      placeholder="John Doe"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email (from invitation)</Label>
+                    <Input
+                      id="signup-email"
+                      type="email"
+                      value={email}
+                      disabled
+                      className="bg-muted"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input
+                      id="signup-password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Create Account
+                  </Button>
+                </form>
+              )}
+            </TabsContent>
+
+            <TabsContent value="reset">
+              <form onSubmit={handlePasswordReset} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="reset-email">Email</Label>
                   <Input
-                    id="signup-email"
+                    id="reset-email"
                     type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="team@smartys.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    placeholder="Enter your email address"
                     required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    required
-                    minLength={6}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create Account
+                  Send Reset Email
                 </Button>
+                <p className="text-xs text-muted-foreground text-center">
+                  Enter your email address and we'll send you a link to reset your password.
+                </p>
               </form>
             </TabsContent>
           </Tabs>
