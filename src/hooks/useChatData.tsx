@@ -266,7 +266,7 @@ export const useChatData = () => {
           message: replyText
         };
 
-        await fetch('https://smartys.app.n8n.cloud/webhook-test/0443a6c9-8efa-4a29-ba41-06b9bad558dd', {
+        await fetch('https://smartys.app.n8n.cloud/webhook/0443a6c9-8efa-4a29-ba41-06b9bad558dd', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
