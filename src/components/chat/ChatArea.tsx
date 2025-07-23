@@ -6,6 +6,30 @@ import { Input } from '@/components/ui/input';
 import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Utility function to detect and render URLs as clickable links
+const renderTextWithLinks = (text: string) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  
+  return parts.map((part, index) => {
+    if (urlRegex.test(part)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 hover:text-blue-700 underline break-all"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 interface ChatMessage {
   id: number;
   session_id: string;
@@ -138,7 +162,9 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
               <div>
                 {/* Show message content properly formatted */}
                 {typeof msg?.content === 'string' ? (
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <div className="text-sm whitespace-pre-wrap">
+                    {renderTextWithLinks(msg.content)}
+                  </div>
                 ) : (
                   <pre className="text-sm whitespace-pre-wrap font-mono bg-muted p-2 rounded text-xs">
                     {JSON.stringify(msg, null, 2)}
