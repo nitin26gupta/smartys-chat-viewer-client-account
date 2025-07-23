@@ -115,10 +115,37 @@ const UserManagement = () => {
 
       const inviteLink = `${window.location.origin}/auth?token=${data.invitation_token}`;
       
-      toast({
-        title: "Invitation sent",
-        description: `Invitation link: ${inviteLink}`,
-      });
+      // Send invitation email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-invitation-email', {
+          body: {
+            email: inviteEmail,
+            inviteLink: inviteLink,
+            inviterName: user?.email?.split('@')[0] || 'Admin'
+          }
+        });
+
+        if (emailError) {
+          console.error('Error sending email:', emailError);
+          toast({
+            title: "Invitation created",
+            description: `Invitation saved but email failed to send. Link: ${inviteLink}`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Invitation sent",
+            description: `Invitation email sent to ${inviteEmail}`,
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+        toast({
+          title: "Invitation created",
+          description: `Invitation saved but email failed to send. Link: ${inviteLink}`,
+          variant: "destructive",
+        });
+      }
 
       setInviteEmail('');
       setDialogOpen(false);
