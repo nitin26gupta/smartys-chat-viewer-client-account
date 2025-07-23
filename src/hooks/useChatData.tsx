@@ -41,8 +41,6 @@ export const useChatData = () => {
       console.log('BROWSER DEBUG: Fetching conversations...');
       
       // Step 1: Get all users from user_info table
-      console.log('About to fetch user_info...');
-      alert('DEBUG: About to fetch user_info for conversations');
       const { data: allUsers, error: userError } = await supabase
         .from('user_info')
         .select('*');
