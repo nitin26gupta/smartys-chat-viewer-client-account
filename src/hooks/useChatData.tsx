@@ -135,10 +135,9 @@ export const useChatData = () => {
       setConversations(conversations);
     } catch (error) {
       console.error('Error fetching conversations:', error);
-      alert(`DETAILED ERROR: ${JSON.stringify(error)}`);
       toast({
         title: "Error loading conversations",
-        description: `Failed to load conversation list: ${error.message || error}`,
+        description: "Failed to load conversation list",
         variant: "destructive",
       });
     } finally {

@@ -144,7 +144,7 @@ const UserManagement = () => {
 
       if (error) throw error;
 
-      const inviteLink = `${window.location.origin}/auth?token=${data.invitation_token}`;
+      const inviteLink = `https://smartys-support-chat.ekamapps.com/auth?token=${data.invitation_token}`;
       
       // Send invitation email
       try {
@@ -226,7 +226,7 @@ const UserManagement = () => {
     setResendLoading(invitation.id);
 
     try {
-      const inviteLink = `${window.location.origin}/auth?token=${invitation.invitation_token}`;
+      const inviteLink = `https://smartys-support-chat.ekamapps.com/auth?token=${invitation.invitation_token}`;
       
       const { error: emailError } = await supabase.functions.invoke('send-invitation-email', {
         body: {
