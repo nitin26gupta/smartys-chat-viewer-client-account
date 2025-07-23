@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useChatData } from '@/hooks/useChatData';
@@ -7,11 +7,13 @@ import { ConversationList } from '@/components/chat/ConversationList';
 import { ChatArea } from '@/components/chat/ChatArea';
 import { UserInfoPanel } from '@/components/chat/UserInfoPanel';
 import { Button } from '@/components/ui/button';
-import { LogOut, MessageSquare, Users, BarChart3 } from 'lucide-react';
+import { LogOut, MessageSquare, Users, BarChart3, Shield } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
   const {
     conversations,
     selectedConversation,
@@ -22,6 +24,28 @@ const Index = () => {
     messagesLoading,
     sendReply,
   } = useChatData();
+
+  // Check if user is admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+        
+        setIsAdmin(!!data);
+      } catch (error) {
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -99,10 +123,22 @@ const Index = () => {
               </div>
             </div>
             
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="mr-2 h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate('/admin')}
+                  size="sm"
+                >
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin
+                </Button>
+              )}
+              <Button variant="outline" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
         </header>
         

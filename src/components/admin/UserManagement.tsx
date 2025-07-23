@@ -50,30 +50,25 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select(`
-          user_id,
-          display_name,
-          created_at,
-          user_roles (role)
-        `);
-
-      if (profilesError) throw profilesError;
-
-      // Get user emails from auth.users via admin function
+      // Get users using RPC function
       const { data: usersData, error: usersError } = await supabase.rpc('get_all_users');
-
       if (usersError) throw usersError;
 
-      const combinedUsers = profilesData?.map(profile => {
-        const authUser = usersData?.find((u: any) => u.id === profile.user_id);
+      // Get user roles
+      const { data: rolesData, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+      if (rolesError) throw rolesError;
+
+      const combinedUsers = usersData?.map((authUser: any) => {
+        const userRole = rolesData?.find(r => r.user_id === authUser.id);
+        
         return {
-          id: profile.user_id,
-          email: authUser?.email || 'Unknown',
-          display_name: profile.display_name || 'Unknown',
-          role: profile.user_roles?.[0]?.role || 'user',
-          created_at: profile.created_at,
+          id: authUser.id,
+          email: authUser.email,
+          display_name: authUser.email.split('@')[0], // Use email prefix as display name
+          role: userRole?.role || 'user',
+          created_at: authUser.created_at,
         };
       }) || [];
 
@@ -243,7 +238,7 @@ const UserManagement = () => {
                       Joined {new Date(user.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  {user.id !== user.id && ( // Prevent self-deletion
+                  {user.id !== user?.id && ( // Prevent self-deletion
                     <Button
                       variant="destructive"
                       size="sm"
