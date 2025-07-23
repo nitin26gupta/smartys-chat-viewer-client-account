@@ -33,8 +33,10 @@ export const UserInfoPanel = ({
   
   // Update agentStatus when userInfo changes
   useEffect(() => {
-    setAgentStatus(userInfo?.agent_on ?? true);
-  }, [userInfo?.agent_on]);
+    if (userInfo) {
+      setAgentStatus(userInfo.agent_on ?? true);
+    }
+  }, [userInfo?.user_id, userInfo?.agent_on]);
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
