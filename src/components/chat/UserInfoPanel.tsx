@@ -56,13 +56,41 @@ export const UserInfoPanel = ({
   const handleAgentToggle = async (checked: boolean) => {
     if (!userInfo?.user_id) return;
 
-    // Agent toggle functionality removed - will be reimplemented in admin panel
-    console.log('Agent toggle feature disabled');
-    setAgentStatus(checked);
-    toast({
-      title: "Info",
-      description: "Agent toggle will be available in the admin panel",
-    });
+    try {
+      setAgentStatus(checked);
+      
+      // Update the agent_on field in the user_info table
+      const { error } = await supabase
+        .from('user_info')
+        .update({ agent_on: checked } as any)
+        .eq('user_id', userInfo.user_id);
+
+      if (error) {
+        console.error('Error updating agent status:', error);
+        // Revert the state if update failed
+        setAgentStatus(!checked);
+        toast({
+          title: "Error",
+          description: "Failed to update AI agent status. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `AI agent ${checked ? 'enabled' : 'disabled'} for this user`,
+      });
+    } catch (error) {
+      console.error('Error updating agent status:', error);
+      // Revert the state if update failed
+      setAgentStatus(!checked);
+      toast({
+        title: "Error",
+        description: "Failed to update AI agent status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSendTemplate = async (templateName: string, templateDisplayName: string) => {
