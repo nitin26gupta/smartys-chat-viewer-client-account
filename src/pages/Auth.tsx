@@ -185,7 +185,7 @@ const Auth = () => {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup" disabled={!validInvitation && !isFirstUser}>
-                {(validInvitation || isFirstUser) ? 'Create Account' : 'Invitation Required'}
+                Create Account
               </TabsTrigger>
               <TabsTrigger value="reset">Reset Password</TabsTrigger>
             </TabsList>
