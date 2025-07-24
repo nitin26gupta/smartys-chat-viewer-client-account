@@ -56,6 +56,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [replyText, setReplyText] = useState('');
   const [isLoadingPrevious, setIsLoadingPrevious] = useState(false);
+  const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -68,6 +69,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
     // Check if we're at the top and need to load previous messages
     if (container.scrollTop === 0 && messages.length > 0) {
       setIsLoadingPrevious(true);
+      setShouldScrollToBottom(false); // Prevent auto-scroll to bottom
       const prevScrollHeight = container.scrollHeight;
       
       try {
@@ -86,11 +88,16 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
   };
 
   useEffect(() => {
-    // Only scroll to bottom for new conversations or new messages
-    if (messages.length > 0 && !isLoadingPrevious) {
+    // Only scroll to bottom for new conversations or new messages, not when loading previous
+    if (messages.length > 0 && !isLoadingPrevious && shouldScrollToBottom) {
       scrollToBottom();
     }
-  }, [messages, isLoadingPrevious]);
+  }, [messages, isLoadingPrevious, shouldScrollToBottom]);
+
+  // Reset shouldScrollToBottom when selecting a new conversation
+  useEffect(() => {
+    setShouldScrollToBottom(true);
+  }, [selectedConversation]);
 
   const formatTimestamp = (timestamp?: string) => {
     if (!timestamp) return '';
