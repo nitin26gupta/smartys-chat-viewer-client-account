@@ -90,7 +90,7 @@ export const ConversationList = ({
       </div>
 
       {/* Conversations List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto max-h-full">
         {filteredConversations.length === 0 ? (
           <div className="flex items-center justify-center h-full text-center p-4">
             <div>

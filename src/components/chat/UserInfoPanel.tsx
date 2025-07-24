@@ -171,8 +171,8 @@ export const UserInfoPanel = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-      {/* User Profile Card */}
+      <div className="flex-1 overflow-y-auto max-h-full p-4 space-y-4">
+      {/* User Profile & Contact Information Combined */}
       <Card>
         <CardHeader className="text-center pb-3">
           <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-3">
@@ -181,17 +181,12 @@ export const UserInfoPanel = ({
           <CardTitle className="text-lg">{userInfo.user_name}</CardTitle>
           <Badge variant="secondary">Customer</Badge>
         </CardHeader>
-      </Card>
-
-      {/* Contact Information */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center">
-            <Phone className="h-4 w-4 mr-2" />
-            Contact Information
-          </CardTitle>
-        </CardHeader>
         <CardContent className="space-y-3">
+          <div className="flex items-center mb-3">
+            <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+            <span className="text-sm font-medium text-muted-foreground">Contact Information</span>
+          </div>
+          
           <div>
             <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
             <p className="text-sm font-mono">{userInfo.phone_number}</p>
@@ -201,7 +196,6 @@ export const UserInfoPanel = ({
             <label className="text-sm font-medium text-muted-foreground">User ID</label>
             <p className="text-sm font-mono break-all">{userInfo.user_id}</p>
           </div>
-          
         </CardContent>
       </Card>
 

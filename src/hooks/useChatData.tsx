@@ -158,8 +158,8 @@ export const useChatData = () => {
       const conversation = conversations.find(c => c.user_id === userId);
       if (!conversation) return;
 
-      // For pagination, we'll load 50 messages at a time
-      const limit = 50;
+      // For pagination, we'll load 15 messages at a time
+      const limit = 15;
       let query = supabase
         .from('smartys_chat_histories')
         .select('*')
