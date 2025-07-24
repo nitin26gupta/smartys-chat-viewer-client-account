@@ -6,6 +6,7 @@ interface ChatMessage {
   id: number;
   session_id: string;
   message: any; // Using any for now to handle the JSON data from Supabase
+  timestamp?: string; // Database timestamp
 }
 
 interface UserInfo {
@@ -88,7 +89,7 @@ export const useChatData = () => {
         const sessionIds = userSessions.map(s => s.session_id);
         const { data: userMessages, error: messageError } = await supabase
           .from('smartys_chat_histories')
-          .select('*')
+          .select('*, timestamp')
           .in('session_id', sessionIds)
           .order('id', { ascending: true });
 
@@ -162,7 +163,7 @@ export const useChatData = () => {
       const limit = 15;
       let query = supabase
         .from('smartys_chat_histories')
-        .select('*')
+        .select('*, timestamp')
         .in('session_id', conversation.session_ids)
         .order('id', { ascending: false })
         .limit(limit);

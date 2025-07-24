@@ -34,6 +34,7 @@ interface ChatMessage {
   id: number;
   session_id: string;
   message: any; // Using any for now to handle the JSON data from Supabase
+  timestamp?: string; // Database timestamp
 }
 
 interface UserInfo {
@@ -117,7 +118,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
       .map((msg) => {
         const message = msg.message as any;
         const sender = message?.type === 'ai' && message?.sender_category === 'human_agent' ? 'Support' : message?.type === 'ai' ? 'AI' : 'Customer';
-        const time = formatTimestamp(message?.timestamp);
+        const time = formatTimestamp(msg.timestamp || message?.timestamp);
         const content = message?.type === 'image' 
           ? `[Image: ${message?.url}]` 
           : message?.content;
@@ -211,12 +212,10 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             )}
           </div>
           
-          {msg?.timestamp && (
-            <div className={cn("flex items-center space-x-2 text-xs text-muted-foreground", (isAI || isHumanAgent) ? "justify-start" : "justify-end")}>
-              <span>{formatTimestamp(msg?.timestamp)}</span>
-              {isHumanAgent && <span className="text-green-600">Support</span>}
-            </div>
-          )}
+          <div className={cn("flex items-center space-x-2 text-xs text-muted-foreground", (isAI || isHumanAgent) ? "justify-start" : "justify-end")}>
+            <span>{formatTimestamp(message.timestamp || msg?.timestamp)}</span>
+            {isHumanAgent && <span className="text-green-600">Support</span>}
+          </div>
         </div>
       </div>
     );
