@@ -241,20 +241,20 @@ export const UserInfoPanel = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full text-xs h-auto py-2 text-left justify-start"
                 onClick={() => handleSendTemplate("smartys_share_vehicle_registration_copy", "Vehicle Registration Template")}
               >
-                <Send className="h-4 w-4 mr-2" />
-                Send Vehicle Registration Template
+                <Send className="h-3 w-3 mr-2 flex-shrink-0" />
+                <span className="truncate">Vehicle Registration</span>
               </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full"
+                className="w-full text-xs h-auto py-2 text-left justify-start"
                 onClick={() => handleSendTemplate("no_response_24_hours", "24 Hour No Response Template")}
               >
-                <Send className="h-4 w-4 mr-2" />
-                Send 24 Hour No Response Template
+                <Send className="h-3 w-3 mr-2 flex-shrink-0" />
+                <span className="truncate">24hr No Response</span>
               </Button>
             </div>
           </div>

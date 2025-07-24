@@ -182,17 +182,30 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
                   <span className="text-sm">Image</span>
                 </div>
                 {msg?.url && (
-                  <img
-                    src={msg.url}
-                    alt="Shared image"
-                    className="max-w-full h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                    onClick={() => window.open(msg.url, '_blank')}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      target.nextElementSibling?.classList.remove('hidden');
-                    }}
-                  />
+                  <>
+                    <img
+                      src={msg.url}
+                      alt="Shared image"
+                      className="max-w-full h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(msg.url, '_blank')}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                    <div className="text-xs text-muted-foreground break-all">
+                      <a
+                        href={msg.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {msg.url}
+                      </a>
+                    </div>
+                  </>
                 )}
                 <div className="hidden text-sm text-muted-foreground">Failed to load image</div>
               </div>
