@@ -185,8 +185,8 @@ export const useChatData = () => {
           // Prepend previous messages to current messages
           setMessages(prev => [...sortedMessages, ...prev]);
         } else {
-          // Get most recent messages (reverse the array to get latest messages)
-          setMessages(messagesData.reverse());
+          // Get most recent messages
+          setMessages(sortedMessages);
         }
         
         if (!loadPrevious) {

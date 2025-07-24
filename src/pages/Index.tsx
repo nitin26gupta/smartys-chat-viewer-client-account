@@ -110,7 +110,7 @@ const Index = () => {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="h-screen bg-background flex flex-col overflow-hidden">
         {/* Header */}
         <header className="border-b bg-card px-6 py-4">
           <div className="flex items-center justify-between">
@@ -181,9 +181,9 @@ const Index = () => {
         </header>
         
         {/* Main Content */}
-        <div className="flex-1 flex h-0">
+        <div className="flex-1 flex overflow-hidden">
           {/* Left Sidebar - Conversations */}
-          <div className="w-80 border-r bg-card flex flex-col h-full">
+          <div className="w-80 border-r bg-card flex flex-col overflow-hidden">
             <ConversationList
               conversations={conversations}
               selectedConversation={selectedConversation}
@@ -193,7 +193,7 @@ const Index = () => {
           </div>
           
           {/* Center - Chat Area */}
-          <div className="flex-1 bg-background h-full">
+          <div className="flex-1 bg-background overflow-hidden">
             <ChatArea
               messages={messages}
               loading={messagesLoading}
@@ -205,7 +205,7 @@ const Index = () => {
           </div>
           
           {/* Right Sidebar - User Info */}
-          <div className="w-80 border-l bg-card flex flex-col h-full">
+          <div className="w-80 border-l bg-card flex flex-col overflow-hidden">
             <UserInfoPanel
               userInfo={userInfo}
               selectedConversation={selectedConversation}
