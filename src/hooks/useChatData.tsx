@@ -113,7 +113,7 @@ export const useChatData = () => {
         const conversation: ConversationSummary = {
           user_id: user.user_id,
           last_message: message?.content || (message?.type === 'image' ? '📷 Image' : 'Message'),
-          last_message_time: message?.timestamp || new Date().toISOString(),
+          last_message_time: latestMessage.timestamp || new Date().toISOString(),
           message_count: userMessages.length,
           user_info: {
             user_id: user.user_id,
