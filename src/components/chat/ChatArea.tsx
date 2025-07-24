@@ -6,6 +6,12 @@ import { Input } from '@/components/ui/input';
 import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Utility function to check if URL is an image
+const isImageUrl = (url: string) => {
+  const imageExtensions = /\.(jpg|jpeg|png|gif|bmp|webp|svg)(\?.*)?$/i;
+  return imageExtensions.test(url) || url.includes('supabase.co/storage') || url.includes('image');
+};
+
 // Utility function to detect and render URLs as clickable links
 const renderTextWithLinks = (text: string) => {
   const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -13,6 +19,35 @@ const renderTextWithLinks = (text: string) => {
   
   return parts.map((part, index) => {
     if (urlRegex.test(part)) {
+      if (isImageUrl(part)) {
+        return (
+          <div key={index} className="space-y-2 my-2">
+            <img
+              src={part}
+              alt="Shared image"
+              className="max-w-full h-auto rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => window.open(part, '_blank')}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+            <div className="hidden text-sm text-muted-foreground">Failed to load image</div>
+            <div className="text-xs text-muted-foreground break-all">
+              <a
+                href={part}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {part}
+              </a>
+            </div>
+          </div>
+        );
+      }
       return (
         <a
           key={index}
