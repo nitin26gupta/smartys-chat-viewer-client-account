@@ -36,7 +36,8 @@ export const UserInfoPanel = ({
   // Update agentStatus when userInfo changes
   useEffect(() => {
     if (userInfo?.user_id) {
-      setAgentStatus(userInfo.agent_on ?? true);
+      // Use the actual database value, default to false if undefined
+      setAgentStatus(userInfo.agent_on ?? false);
     }
   }, [userInfo?.user_id, userInfo?.agent_on]);
   const formatDate = (dateString?: string) => {
