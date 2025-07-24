@@ -214,7 +214,7 @@ export const useChatData = () => {
   useEffect(() => {
     console.log('Setting up real-time subscription...');
     const channel = supabase
-      .channel('chat-updates')
+      .channel('schema-db-changes')
       .on(
         'postgres_changes',
         {
