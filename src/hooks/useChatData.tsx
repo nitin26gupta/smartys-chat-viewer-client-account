@@ -298,10 +298,6 @@ export const useChatData = () => {
 
         console.log('Webhook triggered successfully:', webhookPayload);
         
-        toast({
-          title: "Reply sent",
-          description: "Your message has been sent successfully",
-        });
 
         // Refresh messages to show any updates from the workflow
         setTimeout(() => {
