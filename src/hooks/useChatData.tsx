@@ -146,35 +146,66 @@ export const useChatData = () => {
   };
 
   // Fetch messages for selected conversation (user_id)
-  const fetchMessages = async (userId: string) => {
+  const fetchMessages = async (userId: string, loadPrevious = false) => {
     if (!userId) return;
     
-    setMessagesLoading(true);
+    if (!loadPrevious) {
+      setMessagesLoading(true);
+    }
+    
     try {
       // Find the conversation by user_id to get session IDs
       const conversation = conversations.find(c => c.user_id === userId);
       if (!conversation) return;
 
-      // Get messages from all sessions for this user_id
-      const { data: messages, error } = await supabase
+      // For pagination, we'll load 50 messages at a time
+      const limit = 50;
+      let query = supabase
         .from('smartys_chat_histories')
         .select('*')
         .in('session_id', conversation.session_ids)
-        .order('id', { ascending: true });
+        .order('id', { ascending: false })
+        .limit(limit);
+
+      // If loading previous messages, get messages before the first current message
+      if (loadPrevious && messages.length > 0) {
+        const firstMessageId = Math.min(...messages.map(m => m.id));
+        query = query.lt('id', firstMessageId);
+      }
+
+      const { data: messagesData, error } = await query;
 
       if (error) throw error;
 
-      setMessages((messages || []) as ChatMessage[]);
-      setUserInfo(conversation.user_info || null);
+      if (messagesData) {
+        // Reverse to get chronological order
+        const sortedMessages = messagesData.reverse();
+        
+        if (loadPrevious) {
+          // Prepend previous messages to current messages
+          setMessages(prev => [...sortedMessages, ...prev]);
+        } else {
+          // Get most recent messages (reverse the array to get latest messages)
+          setMessages(messagesData.reverse());
+        }
+        
+        if (!loadPrevious) {
+          setUserInfo(conversation.user_info || null);
+        }
+      }
     } catch (error) {
       console.error('Error fetching messages:', error);
-      toast({
-        title: "Error loading messages",
-        description: "Failed to load conversation messages",
-        variant: "destructive",
-      });
+      if (!loadPrevious) {
+        toast({
+          title: "Error loading messages",
+          description: "Failed to load conversation messages",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setMessagesLoading(false);
+      if (!loadPrevious) {
+        setMessagesLoading(false);
+      }
     }
   };
 
@@ -308,5 +339,6 @@ export const useChatData = () => {
       // Refresh conversations to get updated user info
       fetchConversations();
     },
+    loadPreviousMessages: (userId: string) => fetchMessages(userId, true),
   };
 };

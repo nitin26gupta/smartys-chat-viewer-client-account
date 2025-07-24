@@ -48,19 +48,49 @@ interface ChatAreaProps {
   selectedConversation: string | null;
   userInfo: UserInfo | null;
   onSendReply: (userId: string, message: string) => void;
+  onLoadPrevious?: (userId: string) => void;
 }
 
-export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply }: ChatAreaProps) => {
+export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onLoadPrevious }: ChatAreaProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [replyText, setReplyText] = useState('');
+  const [isLoadingPrevious, setIsLoadingPrevious] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleScroll = async () => {
+    const container = messagesContainerRef.current;
+    if (!container || !selectedConversation || !onLoadPrevious || isLoadingPrevious) return;
+
+    // Check if we're at the top and need to load previous messages
+    if (container.scrollTop === 0 && messages.length > 0) {
+      setIsLoadingPrevious(true);
+      const prevScrollHeight = container.scrollHeight;
+      
+      try {
+        await onLoadPrevious(selectedConversation);
+        
+        // Maintain scroll position after loading previous messages
+        setTimeout(() => {
+          const newScrollHeight = container.scrollHeight;
+          container.scrollTop = newScrollHeight - prevScrollHeight;
+          setIsLoadingPrevious(false);
+        }, 100);
+      } catch (error) {
+        setIsLoadingPrevious(false);
+      }
+    }
+  };
+
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only scroll to bottom for new conversations or new messages
+    if (messages.length > 0 && !isLoadingPrevious) {
+      scrollToBottom();
+    }
+  }, [messages, isLoadingPrevious]);
 
   const formatTimestamp = (timestamp?: string) => {
     if (!timestamp) return '';
@@ -174,10 +204,12 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             )}
           </div>
           
-          <div className={cn("flex items-center space-x-2 text-xs text-muted-foreground", (isAI || isHumanAgent) ? "justify-start" : "justify-end")}>
-            <span>{formatTimestamp(msg?.timestamp)}</span>
-            {isHumanAgent && <span className="text-green-600">Support</span>}
-          </div>
+          {msg?.timestamp && (
+            <div className={cn("flex items-center space-x-2 text-xs text-muted-foreground", (isAI || isHumanAgent) ? "justify-start" : "justify-end")}>
+              <span>{formatTimestamp(msg?.timestamp)}</span>
+              {isHumanAgent && <span className="text-green-600">Support</span>}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -251,7 +283,16 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50"
+        onScroll={handleScroll}
+      >
+        {isLoadingPrevious && (
+          <div className="flex justify-center py-2">
+            <div className="text-sm text-gray-500">Loading previous messages...</div>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">

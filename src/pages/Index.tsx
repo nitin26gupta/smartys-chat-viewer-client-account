@@ -27,6 +27,7 @@ const Index = () => {
     refreshConversations,
     sendReply,
     refreshUserInfo,
+    loadPreviousMessages,
   } = useChatData();
 
   // Check if user is admin
@@ -180,9 +181,9 @@ const Index = () => {
         </header>
         
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex h-0">
           {/* Left Sidebar - Conversations */}
-          <div className="w-80 border-r bg-card">
+          <div className="w-80 border-r bg-card flex flex-col h-full">
             <ConversationList
               conversations={conversations}
               selectedConversation={selectedConversation}
@@ -192,18 +193,19 @@ const Index = () => {
           </div>
           
           {/* Center - Chat Area */}
-          <div className="flex-1 bg-background">
+          <div className="flex-1 bg-background h-full">
             <ChatArea
               messages={messages}
               loading={messagesLoading}
               selectedConversation={selectedConversation}
               userInfo={userInfo}
               onSendReply={sendReply}
+              onLoadPrevious={loadPreviousMessages}
             />
           </div>
           
           {/* Right Sidebar - User Info */}
-          <div className="w-80 border-l bg-card">
+          <div className="w-80 border-l bg-card flex flex-col h-full">
             <UserInfoPanel
               userInfo={userInfo}
               selectedConversation={selectedConversation}

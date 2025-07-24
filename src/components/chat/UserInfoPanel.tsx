@@ -170,7 +170,8 @@ export const UserInfoPanel = ({
   }
 
   return (
-    <div className="h-full overflow-y-auto p-4 space-y-4">
+    <div className="h-full flex flex-col">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {/* User Profile Card */}
       <Card>
         <CardHeader className="text-center pb-3">
@@ -201,15 +202,6 @@ export const UserInfoPanel = ({
             <p className="text-sm font-mono break-all">{userInfo.user_id}</p>
           </div>
           
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full"
-            onClick={handleWhatsAppOpen}
-          >
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open in WhatsApp
-          </Button>
         </CardContent>
       </Card>
 
@@ -297,6 +289,7 @@ export const UserInfoPanel = ({
         </CardContent>
       </Card>
 
+      </div>
     </div>
   );
 };
