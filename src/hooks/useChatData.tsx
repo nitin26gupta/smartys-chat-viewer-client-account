@@ -133,6 +133,13 @@ export const useChatData = () => {
         console.log(`${conv.user_info?.user_name}: ${conv.message_count} messages`);
       });
 
+      // Sort conversations by latest message time (most recent first)
+      conversations.sort((a, b) => {
+        const timeA = new Date(a.last_message_time).getTime();
+        const timeB = new Date(b.last_message_time).getTime();
+        return timeB - timeA; // Descending order (most recent first)
+      });
+
       setConversations(conversations);
     } catch (error) {
       console.error('Error fetching conversations:', error);
