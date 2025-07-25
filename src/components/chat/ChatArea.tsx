@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 // Utility function to check if URL is an image
 const isImageUrl = (url: string) => {
@@ -93,6 +94,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
   const [replyText, setReplyText] = useState('');
   const [isLoadingPrevious, setIsLoadingPrevious] = useState(false);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
+  const { t } = useLanguage();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -330,7 +332,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
               className="border-gray-200 text-gray-600 hover:bg-gray-50"
             >
               <Download className="h-4 w-4 mr-2" />
-              Export
+              {t('exportChat')}
             </Button>
           </div>
         </div>

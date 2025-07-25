@@ -80,31 +80,31 @@ const Index = () => {
           </div>
           
           <div>
-            <h1 className="text-3xl font-bold mb-2">Smarty's Chat Viewer</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('appTitle')}</h1>
             <p className="text-muted-foreground">
-              Professional WhatsApp conversation management for customer support teams
+              {t('appDescription')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-4 text-sm">
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
               <Users className="h-5 w-5 text-primary" />
-              <span>Manage customer conversations</span>
+              <span>{t('manageConversations')}</span>
             </div>
             
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
               <BarChart3 className="h-5 w-5 text-primary" />
-              <span>Track conversation analytics</span>
+              <span>{t('trackAnalytics')}</span>
             </div>
             
             <div className="flex items-center space-x-3 p-3 rounded-lg bg-muted/50">
               <MessageSquare className="h-5 w-5 text-primary" />
-              <span>Real-time message updates</span>
+              <span>{t('realTimeUpdates')}</span>
             </div>
           </div>
           
           <Button onClick={() => navigate('/auth')} size="lg" className="w-full">
-            Access Team Portal
+            {t('loginButton')}
           </Button>
         </div>
       </div>
@@ -124,9 +124,9 @@ const Index = () => {
                 className="h-8 w-8"
               />
               <div>
-                <h1 className="text-xl font-semibold">Smarty's Chat Viewer</h1>
+                <h1 className="text-xl font-semibold">{t('appTitle')}</h1>
                 <p className="text-sm text-muted-foreground">
-                  {conversations.length} conversations • Welcome, {user.email}
+                  {conversations.length} {t('conversations').toLowerCase()} • {t('welcome')}, {user.email}
                 </p>
               </div>
             </div>
@@ -157,7 +157,7 @@ const Index = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Shield className="mr-2 h-4 w-4" />
-                      Invite New Users
+                      {t('inviteNewUsers')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

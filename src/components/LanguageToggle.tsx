@@ -17,7 +17,7 @@ export const LanguageToggle = () => {
       className="flex items-center gap-2"
     >
       <Languages className="h-4 w-4" />
-      {language === 'en' ? 'DE' : 'EN'}
+      {language.toUpperCase()}
     </Button>
   );
 };

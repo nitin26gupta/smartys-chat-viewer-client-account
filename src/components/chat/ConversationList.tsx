@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Search, MessageCircle, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserInfo {
   user_id: string;
@@ -34,6 +35,7 @@ export const ConversationList = ({
   loading = false
 }: ConversationListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useLanguage();
 
   const filteredConversations = conversations.filter((conv) => {
     const searchTerm = searchQuery.toLowerCase();
@@ -67,7 +69,7 @@ export const ConversationList = ({
       <div className="h-full flex items-center justify-center">
         <div className="text-center">
           <MessageCircle className="h-8 w-8 animate-pulse mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Loading conversations...</p>
+          <p className="text-sm text-muted-foreground">{t('loadingMessages')}</p>
         </div>
       </div>
     );
@@ -77,11 +79,11 @@ export const ConversationList = ({
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
       <div className="p-4 border-b border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-900 mb-3">Conversations</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('conversations')}</h2>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search conversations..."
+            placeholder={t('searchConversations')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10 border-gray-200 focus:border-green-500 focus:ring-green-500"
@@ -96,7 +98,7 @@ export const ConversationList = ({
             <div>
               <MessageCircle className="h-8 w-8 mx-auto mb-2 text-gray-400" />
               <p className="text-sm text-gray-500">
-                {searchQuery ? 'No conversations found' : 'No conversations yet'}
+                {searchQuery ? t('noConversations') : t('noConversationsText')}
               </p>
             </div>
           </div>
@@ -151,7 +153,7 @@ export const ConversationList = ({
                     variant="secondary" 
                     className="text-xs bg-gray-100 text-gray-600 hover:bg-gray-100"
                   >
-                    {conversation.message_count} messages
+                    {conversation.message_count} {t('messages')}
                   </Badge>
                   {conversation.message_count > 0 && (
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
