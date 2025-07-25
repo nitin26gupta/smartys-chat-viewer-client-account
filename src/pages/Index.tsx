@@ -6,6 +6,8 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { ConversationList } from '@/components/chat/ConversationList';
 import { ChatArea } from '@/components/chat/ChatArea';
 import { UserInfoPanel } from '@/components/chat/UserInfoPanel';
+import { LanguageToggle } from '@/components/LanguageToggle';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, MessageSquare, Users, BarChart3, Shield, Settings } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 const Index = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [isAdmin, setIsAdmin] = useState(false);
   const {
     conversations,
@@ -129,12 +132,14 @@ const Index = () => {
             </div>
             
             <div className="flex items-center gap-3">
+              <LanguageToggle />
+              
               {isAdmin && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
                       <Shield className="mr-2 h-4 w-4" />
-                      Admin
+                      {t('adminDashboard')}
                       <Badge variant="secondary" className="ml-2">
                         Admin
                       </Badge>
@@ -143,11 +148,11 @@ const Index = () => {
                   <DropdownMenuContent align="end" className="w-48">
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Users className="mr-2 h-4 w-4" />
-                      User Management
+                      {t('userManagement')}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Admin Dashboard
+                      {t('adminDashboard')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
@@ -172,7 +177,7 @@ const Index = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
-                    Sign Out
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

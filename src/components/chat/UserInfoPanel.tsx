@@ -7,6 +7,7 @@ import { User, Phone, Calendar, MessageSquare, ExternalLink, Bot, Send } from 'l
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface UserInfo {
   user_id: string;
@@ -32,6 +33,7 @@ export const UserInfoPanel = ({
 }: UserInfoPanelProps) => {
   const [agentStatus, setAgentStatus] = useState(false);
   const { toast } = useToast();
+  const { t } = useLanguage();
   
   // Update agentStatus when userInfo changes
   useEffect(() => {
@@ -75,8 +77,8 @@ export const UserInfoPanel = ({
         // Revert the state if update failed
         setAgentStatus(!checked);
         toast({
-          title: "Error",
-          description: "Failed to update AI agent status. Please try again.",
+          title: t('error'),
+          description: t('failedToUpdateAgent'),
           variant: "destructive",
         });
         return;
@@ -88,16 +90,16 @@ export const UserInfoPanel = ({
       }
 
       toast({
-        title: "Success",
-        description: `AI agent ${checked ? 'enabled' : 'disabled'} for this user`,
+        title: t('success'),
+        description: checked ? t('agentEnabled') : t('agentDisabled'),
       });
     } catch (error) {
       console.error('Error updating agent status:', error);
       // Revert the state if update failed
       setAgentStatus(!checked);
       toast({
-        title: "Error",
-        description: "Failed to update AI agent status. Please try again.",
+        title: t('error'),
+        description: t('failedToUpdateAgent'),
         variant: "destructive",
       });
     }
@@ -106,8 +108,8 @@ export const UserInfoPanel = ({
   const handleSendTemplate = async (templateName: string, templateDisplayName: string) => {
     if (!userInfo?.phone_number) {
       toast({
-        title: "Error",
-        description: "No phone number available for this user",
+        title: t('error'),
+        description: t('noPhoneNumber'),
         variant: "destructive",
       });
       return;
@@ -131,14 +133,14 @@ export const UserInfoPanel = ({
       }
 
       toast({
-        title: "Template Sent",
-        description: `${templateDisplayName} has been sent to the customer`,
+        title: t('templateSent'),
+        description: `${templateDisplayName} ${t('templateSentDescription')}`,
       });
     } catch (error) {
       console.error('Error sending template:', error);
       toast({
-        title: "Error",
-        description: "Failed to send template. Please try again.",
+        title: t('error'),
+        description: t('failedToSendTemplate'),
         variant: "destructive",
       });
     }
@@ -150,7 +152,7 @@ export const UserInfoPanel = ({
         <div className="text-center">
           <User className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">
-            Select a conversation to view user details
+            {t('selectConversationDetails')}
           </p>
         </div>
       </div>
@@ -163,7 +165,7 @@ export const UserInfoPanel = ({
         <div className="text-center">
           <User className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">
-            No user information available
+            {t('noUserInfo')}
           </p>
         </div>
       </div>
@@ -180,21 +182,21 @@ export const UserInfoPanel = ({
             <User className="h-8 w-8 text-primary" />
           </div>
           <CardTitle className="text-lg">{userInfo.user_name}</CardTitle>
-          <Badge variant="secondary">Customer</Badge>
+          <Badge variant="secondary">{t('customer')}</Badge>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex items-center mb-3">
             <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-            <span className="text-sm font-medium text-muted-foreground">Contact Information</span>
+            <span className="text-sm font-medium text-muted-foreground">{t('contactInformation')}</span>
           </div>
           
           <div>
-            <label className="text-sm font-medium text-muted-foreground">Phone Number</label>
+            <label className="text-sm font-medium text-muted-foreground">{t('phoneNumber')}</label>
             <p className="text-sm font-mono">{userInfo.phone_number}</p>
           </div>
           
           <div>
-            <label className="text-sm font-medium text-muted-foreground">User ID</label>
+            <label className="text-sm font-medium text-muted-foreground">{t('userId')}</label>
             <p className="text-sm font-mono break-all">{userInfo.user_id}</p>
           </div>
         </CardContent>
@@ -205,15 +207,15 @@ export const UserInfoPanel = ({
         <CardHeader>
           <CardTitle className="text-base flex items-center">
             <Bot className="h-4 w-4 mr-2" />
-            AI Agent Control
+            {t('aiAgentControl')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between items-center">
             <div>
-              <span className="text-sm font-medium">AI Agent Status</span>
+              <span className="text-sm font-medium">{t('aiAgentStatus')}</span>
               <p className="text-xs text-muted-foreground">
-                {agentStatus ? 'AI responses enabled' : 'AI responses disabled'}
+                {agentStatus ? t('aiResponsesEnabled') : t('aiResponsesDisabled')}
               </p>
             </div>
             <Switch
@@ -229,13 +231,13 @@ export const UserInfoPanel = ({
         <CardHeader>
           <CardTitle className="text-base flex items-center">
             <Send className="h-4 w-4 mr-2" />
-            Template Actions
+            {t('templateActions')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div>
             <p className="text-xs text-muted-foreground mb-3">
-              Choose a template to send to the customer
+              {t('chooseTemplate')}
             </p>
             <div className="space-y-2">
               <Button 
@@ -245,7 +247,7 @@ export const UserInfoPanel = ({
                 onClick={() => handleSendTemplate("smartys_share_vehicle_registration_copy", "Vehicle Registration Template")}
               >
                 <Send className="h-3 w-3 mr-2 flex-shrink-0" />
-                <span className="truncate">Vehicle Registration</span>
+                <span className="truncate">{t('vehicleRegistration')}</span>
               </Button>
               <Button 
                 variant="outline" 
@@ -254,7 +256,7 @@ export const UserInfoPanel = ({
                 onClick={() => handleSendTemplate("no_response_24_hours", "24 Hour No Response Template")}
               >
                 <Send className="h-3 w-3 mr-2 flex-shrink-0" />
-                <span className="truncate">24hr No Response</span>
+                <span className="truncate">{t('noResponse24h')}</span>
               </Button>
             </div>
           </div>
@@ -266,17 +268,17 @@ export const UserInfoPanel = ({
         <CardHeader>
           <CardTitle className="text-base flex items-center">
             <MessageSquare className="h-4 w-4 mr-2" />
-            Conversation Stats
+            {t('conversationStats')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">Total Messages</span>
+            <span className="text-sm text-muted-foreground">{t('totalMessages')}</span>
             <Badge variant="outline">{messageCount}</Badge>
           </div>
           
           <div className="flex justify-between items-center">
-            <span className="text-sm text-muted-foreground">User ID</span>
+            <span className="text-sm text-muted-foreground">{t('userId')}</span>
             <code className="text-xs bg-muted px-2 py-1 rounded">
               {selectedConversation}
             </code>
