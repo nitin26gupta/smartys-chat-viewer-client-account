@@ -214,7 +214,7 @@ const Index = () => {
             <UserInfoPanel
               userInfo={userInfo}
               selectedConversation={selectedConversation}
-              messageCount={messages.length}
+              messageCount={conversations.find(conv => conv.user_id === selectedConversation)?.message_count || 0}
               onUserInfoUpdate={refreshUserInfo}
             />
           </div>
