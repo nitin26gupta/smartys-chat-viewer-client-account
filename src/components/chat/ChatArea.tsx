@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
-import FileUpload from './FileUpload';
 import MessageAttachment from './MessageAttachment';
+import ChatInput from './ChatInput';
 
 // Utility function to check if URL is an image
 const isImageUrl = (url: string) => {
@@ -390,33 +390,17 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Reply Input Area */}
+      {/* Chat Input */}
       {selectedConversation && (
-        <div className="border-t border-gray-100 p-4 bg-white space-y-4">
-          {/* File Upload Component */}
-          <FileUpload 
-            onFileUploaded={handleFileUploaded}
+        <div className="border-t border-gray-100 bg-white">
+          <ChatInput
+            value={replyText}
+            onChange={setReplyText}
+            onSendMessage={handleSendReply}
+            onSendFile={handleFileUploaded}
+            placeholder={`Message ${userInfo?.user_name || 'customer'}...`}
             disabled={!selectedConversation}
           />
-          
-          {/* Text Message Input */}
-          <div className="flex items-center space-x-3">
-            <Input
-              placeholder={`Message ${userInfo?.user_name || 'customer'}...`}
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              onKeyPress={handleKeyPress}
-              className="flex-1 border-gray-200 focus:border-green-500 focus:ring-green-500"
-            />
-            <Button
-              onClick={handleSendReply}
-              disabled={!replyText.trim()}
-              size="sm"
-              className="bg-green-500 hover:bg-green-600 text-white px-4"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
         </div>
       )}
     </div>

@@ -76,7 +76,13 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUploaded, disabled }) => 
     setUploadedFiles(prev => [...prev, tempFile]);
 
     try {
-      const fileName = `${Date.now()}-${file.name}`;
+      // Sanitize filename to avoid upload errors
+      const sanitizedName = file.name
+        .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace invalid characters with underscore
+        .replace(/_+/g, '_') // Replace multiple underscores with single
+        .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+      
+      const fileName = `${Date.now()}-${sanitizedName}`;
       const { data, error } = await supabase.storage
         .from('smartys-autozubehor-whatsapp-images')
         .upload(fileName, file);
