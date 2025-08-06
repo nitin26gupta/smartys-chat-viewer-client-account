@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import FileUpload from './FileUpload';
+import MessageAttachment from './MessageAttachment';
 
 // Utility function to check if URL is an image
 const isImageUrl = (url: string) => {
@@ -85,10 +87,11 @@ interface ChatAreaProps {
   selectedConversation: string | null;
   userInfo: UserInfo | null;
   onSendReply: (userId: string, message: string) => void;
+  onSendFile: (userId: string, fileUrl: string, fileName: string, fileType: string) => void;
   onLoadPrevious?: (userId: string) => void;
 }
 
-export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onLoadPrevious }: ChatAreaProps) => {
+export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onSendFile, onLoadPrevious }: ChatAreaProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [replyText, setReplyText] = useState('');
@@ -181,6 +184,11 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
     setReplyText('');
   };
 
+  const handleFileUploaded = (fileUrl: string, fileName: string, fileType: string) => {
+    if (!selectedConversation) return;
+    onSendFile(selectedConversation, fileUrl, fileName, fileType);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -191,6 +199,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
   const MessageBubble = ({ message, isAI, isHumanAgent }: { message: ChatMessage; isAI: boolean; isHumanAgent: boolean }) => {
     const msg = message.message as any;
     const isImage = msg?.type === 'image';
+    const isFile = msg?.type === 'file' || (msg?.file_url && msg?.file_name);
     
     return (
       <div className={cn("flex items-start space-x-3 animate-fade-in", (isAI || isHumanAgent) ? "flex-row" : "flex-row-reverse space-x-reverse")}>
@@ -212,7 +221,14 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             "px-4 py-2 rounded-lg", 
             isHumanAgent ? "bg-green-500 text-white" : isAI ? "bg-muted" : "bg-primary text-primary-foreground"
           )}>
-            {isImage ? (
+            {isFile ? (
+              <MessageAttachment
+                url={msg.file_url || msg.url}
+                fileName={msg.file_name || msg.filename || 'Unknown file'}
+                fileType={msg.file_type || msg.mimetype || 'application/octet-stream'}
+                fileSize={msg.file_size}
+              />
+            ) : isImage ? (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <ImageIcon className="h-4 w-4" />
@@ -376,7 +392,14 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
 
       {/* Reply Input Area */}
       {selectedConversation && (
-        <div className="border-t border-gray-100 p-4 bg-white">
+        <div className="border-t border-gray-100 p-4 bg-white space-y-4">
+          {/* File Upload Component */}
+          <FileUpload 
+            onFileUploaded={handleFileUploaded}
+            disabled={!selectedConversation}
+          />
+          
+          {/* Text Message Input */}
           <div className="flex items-center space-x-3">
             <Input
               placeholder={`Message ${userInfo?.user_name || 'customer'}...`}

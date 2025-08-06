@@ -29,6 +29,7 @@ const Index = () => {
     messagesLoading,
     refreshConversations,
     sendReply,
+    sendFile,
     refreshUserInfo,
     loadPreviousMessages,
   } = useChatData();
@@ -205,6 +206,7 @@ const Index = () => {
               selectedConversation={selectedConversation}
               userInfo={userInfo}
               onSendReply={sendReply}
+              onSendFile={sendFile}
               onLoadPrevious={loadPreviousMessages}
             />
           </div>

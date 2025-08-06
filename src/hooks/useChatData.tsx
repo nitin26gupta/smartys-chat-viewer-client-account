@@ -329,6 +329,74 @@ export const useChatData = () => {
     }
   };
 
+  // Send file function
+  const sendFile = async (userId: string, fileUrl: string, fileName: string, fileType: string) => {
+    try {
+      const conversation = conversations.find(c => c.user_id === userId);
+      if (!conversation || !conversation.session_ids.length) {
+        throw new Error('No active session found for this user');
+      }
+
+      // Store file message in database first
+      const { data, error } = await supabase
+        .from('smartys_chat_histories')
+        .insert({
+          session_id: conversation.session_ids[0],
+          message: {
+            type: 'file',
+            file_url: fileUrl,
+            file_name: fileName,
+            file_type: fileType,
+            content: `📎 ${fileName}`,
+            sender: 'agent'
+          }
+        });
+
+      if (error) throw error;
+
+      // Call webhook to send file via WhatsApp
+      try {
+        const webhookPayload = {
+          mobile_number: conversation.user_info?.phone_number || '',
+          file_url: fileUrl,
+          caption: fileName,
+          file_type: fileType
+        };
+
+        await supabase.functions.invoke('send-whatsapp-file', {
+          body: webhookPayload
+        });
+
+        console.log('File webhook triggered successfully:', webhookPayload);
+        
+        // Refresh messages to show the file message
+        setTimeout(() => {
+          fetchMessages(userId);
+        }, 1000);
+        
+        toast({
+          title: "File sent",
+          description: `${fileName} has been sent successfully`,
+        });
+        
+      } catch (webhookError) {
+        console.error('Error triggering file webhook:', webhookError);
+        toast({
+          title: "Error sending file",
+          description: "File uploaded but failed to send via WhatsApp",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error sending file:', error);
+      toast({
+        title: "Error sending file",
+        description: "Failed to send your file",
+        variant: "destructive",
+      });
+    }
+  };
+
   return {
     conversations,
     selectedConversation,
@@ -339,6 +407,7 @@ export const useChatData = () => {
     messagesLoading,
     refreshConversations: fetchConversations,
     sendReply,
+    sendFile,
     refreshUserInfo: (userId: string) => {
       // Refresh conversations to get updated user info
       fetchConversations();
