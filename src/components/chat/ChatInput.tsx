@@ -92,6 +92,10 @@ const ChatInput: React.FC<ChatInputProps> = ({
         .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
       
       const fileName = `${Date.now()}-${sanitizedName}`;
+      
+      console.log('Attempting to upload file:', fileName, 'to bucket: smartys-autozubehor-whatsapp-images');
+      console.log('User auth status:', supabase.auth.getUser());
+      
       const { data, error } = await supabase.storage
         .from('smartys-autozubehor-whatsapp-images')
         .upload(fileName, file);
