@@ -20,37 +20,61 @@ serve(async (req) => {
       throw new Error('Missing required parameters: mobile_number and file_url');
     }
 
-    // This would typically integrate with your WhatsApp Business API
-    // For now, we'll just log the request and return success
-    // You would replace this with actual WhatsApp API integration
-    
-    const whatsappPayload = {
-      to: mobile_number,
-      type: "document", // or "image" based on file_type
-      document: {
-        link: file_url,
-        caption: caption || "",
-        filename: caption || "document"
-      }
+    const whatsappAccessToken = Deno.env.get('WHATSAPP_ACCESS_TOKEN');
+    const whatsappPhoneNumberId = Deno.env.get('WHATSAPP_PHONE_NUMBER_ID');
+
+    if (!whatsappAccessToken || !whatsappPhoneNumberId) {
+      throw new Error('WhatsApp credentials not configured. Please set WHATSAPP_ACCESS_TOKEN and WHATSAPP_PHONE_NUMBER_ID');
+    }
+
+    // Determine message type based on file_type
+    let messageType = "document";
+    let mediaPayload: any = {
+      link: file_url,
+      caption: caption || "",
     };
 
-    console.log('Would send WhatsApp message:', whatsappPayload);
+    if (file_type && file_type.startsWith('image/')) {
+      messageType = "image";
+      mediaPayload = {
+        link: file_url,
+        caption: caption || "",
+      };
+    }
 
-    // Here you would make the actual API call to WhatsApp Business API
-    // Example:
-    // const response = await fetch('https://graph.facebook.com/v18.0/YOUR_PHONE_NUMBER_ID/messages', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Authorization': `Bearer ${Deno.env.get('WHATSAPP_ACCESS_TOKEN')}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify(whatsappPayload),
-    // });
+    const whatsappPayload = {
+      messaging_product: "whatsapp",
+      to: mobile_number,
+      type: messageType,
+      [messageType]: mediaPayload
+    };
+
+    console.log('Sending WhatsApp message:', whatsappPayload);
+
+    // Make the actual API call to WhatsApp Business API
+    const whatsappResponse = await fetch(`https://graph.facebook.com/v18.0/${whatsappPhoneNumberId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${whatsappAccessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(whatsappPayload),
+    });
+
+    const whatsappData = await whatsappResponse.json();
+
+    if (!whatsappResponse.ok) {
+      console.error('WhatsApp API error:', whatsappData);
+      throw new Error(`WhatsApp API error: ${whatsappData.error?.message || 'Unknown error'}`);
+    }
+
+    console.log('WhatsApp API response:', whatsappData);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'File send request processed',
+        message: 'File sent successfully via WhatsApp',
+        whatsapp_message_id: whatsappData.messages?.[0]?.id,
         payload: whatsappPayload 
       }),
       { 
