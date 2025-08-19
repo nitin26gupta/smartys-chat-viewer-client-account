@@ -91,6 +91,26 @@ interface ChatAreaProps {
   onLoadPrevious?: (userId: string) => void;
 }
 
+// Check if we can send regular messages (within 24-hour window)
+const canSendMessage = (messages: ChatMessage[]) => {
+  // Find the last customer message (not AI/agent)
+  const lastCustomerMessage = messages
+    .slice()
+    .reverse()
+    .find(msg => {
+      const message = msg.message as any;
+      return message?.type !== 'ai';
+    });
+
+  if (!lastCustomerMessage) return false;
+
+  const messageTime = new Date(lastCustomerMessage.timestamp || lastCustomerMessage.message?.timestamp);
+  const now = new Date();
+  const hoursDiff = (now.getTime() - messageTime.getTime()) / (1000 * 60 * 60);
+  
+  return hoursDiff <= 24;
+};
+
 export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onSendFile, onLoadPrevious }: ChatAreaProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -98,6 +118,8 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
   const [isLoadingPrevious, setIsLoadingPrevious] = useState(false);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const { t } = useLanguage();
+  
+  const canSend = canSendMessage(messages);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -390,6 +412,19 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
         <div ref={messagesEndRef} />
       </div>
 
+      {/* 24-hour restriction notice */}
+      {selectedConversation && !canSend && (
+        <div className="border-t border-gray-100 bg-amber-50 p-3">
+          <div className="flex items-center space-x-2 text-sm text-amber-700">
+            <div className="w-2 h-2 bg-amber-500 rounded-full"></div>
+            <span>
+              Messages can only be sent within 24 hours of the customer's last message. 
+              Use template messages for older conversations.
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Chat Input */}
       {selectedConversation && (
         <div className="border-t border-gray-100 bg-white">
@@ -398,8 +433,8 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             onChange={setReplyText}
             onSendMessage={handleSendReply}
             onSendFile={handleFileUploaded}
-            placeholder={`Message ${userInfo?.user_name || 'customer'}...`}
-            disabled={!selectedConversation}
+            placeholder={canSend ? `Message ${userInfo?.user_name || 'customer'}...` : "24-hour window expired - templates only"}
+            disabled={!selectedConversation || !canSend}
           />
         </div>
       )}
