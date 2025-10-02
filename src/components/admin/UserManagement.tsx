@@ -53,27 +53,39 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log('Starting fetchUsers...');
-      
-      // Use the RPC function to get all users from auth.users
-      const { data: usersData, error: usersError } = await supabase
-        .rpc('get_all_users');
-      
-      console.log('Users RPC response:', { usersData, usersError });
-      
-      if (usersError) {
-        console.error('RPC error:', usersError);
-        throw usersError;
-      }
-
-      // Get user roles
+      // Get user roles first
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
       
-      console.log('Roles data:', { rolesData, rolesError });
+      if (rolesError) {
+        console.error('Roles error:', rolesError);
+        throw rolesError;
+      }
+
+      // Try to get users from RPC function
+      const { data: usersData, error: usersError } = await supabase
+        .rpc('get_all_users');
       
-      if (rolesError) throw rolesError;
+      if (usersError) {
+        console.error('RPC error:', usersError);
+        // If RPC fails, show users with limited info
+        const limitedUsers = rolesData?.map((roleRecord: any) => ({
+          id: roleRecord.user_id,
+          email: 'Email hidden (auth error)',
+          display_name: 'User',
+          role: roleRecord.role,
+          created_at: new Date().toISOString(),
+        })) || [];
+        
+        setUsers(limitedUsers);
+        toast({
+          title: "Limited Access",
+          description: "Could not fetch full user details. Showing roles only.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Combine users with their roles
       const combinedUsers = usersData?.map((authUser: any) => {
@@ -87,7 +99,6 @@ const UserManagement = () => {
         };
       }) || [];
 
-      console.log('Combined users:', combinedUsers);
       setUsers(combinedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
