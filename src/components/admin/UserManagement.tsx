@@ -38,7 +38,7 @@ const UserManagement = () => {
   const [resendLoading, setResendLoading] = useState<string | null>(null);
   const [removeInviteLoading, setRemoveInviteLoading] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { user } = useAuth();
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -133,7 +133,7 @@ const UserManagement = () => {
         .from('user_invitations')
         .insert({
           email: inviteEmail,
-          invited_by: user?.id,
+          invited_by: currentUser?.id,
         })
         .select()
         .single();
@@ -148,7 +148,7 @@ const UserManagement = () => {
           body: {
             email: inviteEmail,
             inviteLink: inviteLink,
-            inviterName: user?.email?.split('@')[0] || 'Admin'
+            inviterName: currentUser?.email?.split('@')[0] || 'Admin'
           }
         });
 
@@ -228,7 +228,7 @@ const UserManagement = () => {
         body: {
           email: invitation.email,
           inviteLink: inviteLink,
-          inviterName: user?.email?.split('@')[0] || 'Admin'
+          inviterName: currentUser?.email?.split('@')[0] || 'Admin'
         }
       });
 
@@ -340,29 +340,29 @@ const UserManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {users.map((user) => (
-                <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
+              {users.map((teamMember) => (
+                <div key={teamMember.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{user.display_name}</span>
-                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                        {user.role}
+                      <span className="font-medium">{teamMember.display_name}</span>
+                      <Badge variant={teamMember.role === 'admin' ? 'default' : 'secondary'}>
+                        {teamMember.role}
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <p className="text-sm text-muted-foreground">{teamMember.email}</p>
                     <p className="text-xs text-muted-foreground">
                       <Calendar className="inline h-3 w-3 mr-1" />
-                      Joined {new Date(user.created_at).toLocaleDateString()}
+                      Joined {new Date(teamMember.created_at).toLocaleDateString()}
                     </p>
                   </div>
-                  {user.id !== user?.id && ( // Prevent self-deletion
+                  {teamMember.id !== currentUser?.id && ( // Prevent self-deletion
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => handleDeleteUser(user.id)}
-                      disabled={deleteLoading === user.id}
+                      onClick={() => handleDeleteUser(teamMember.id)}
+                      disabled={deleteLoading === teamMember.id}
                     >
-                      {deleteLoading === user.id ? (
+                      {deleteLoading === teamMember.id ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <Trash2 className="h-4 w-4" />
