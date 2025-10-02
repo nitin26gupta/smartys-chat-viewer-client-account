@@ -22,6 +22,7 @@ const Auth = () => {
   const [invitationToken, setInvitationToken] = useState('');
   const [validInvitation, setValidInvitation] = useState(false);
   const [isFirstUser, setIsFirstUser] = useState(false);
+  const [activeTab, setActiveTab] = useState('signin');
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -128,6 +129,7 @@ const Auth = () => {
       } else {
         setEmail(data.email);
         setValidInvitation(true);
+        setActiveTab('signup'); // Automatically switch to signup tab
         toast({
           title: "Valid Invitation",
           description: "You can now create your account.",
@@ -323,7 +325,7 @@ const Auth = () => {
               </form>
             </div>
           ) : (
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
               <TabsTrigger value="signup" disabled={!validInvitation && !isFirstUser}>
