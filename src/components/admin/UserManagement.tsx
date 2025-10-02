@@ -53,16 +53,25 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
+      console.log('Starting fetchUsers...');
+      
       // Use the RPC function to get all users from auth.users
       const { data: usersData, error: usersError } = await supabase
         .rpc('get_all_users');
       
-      if (usersError) throw usersError;
+      console.log('Users RPC response:', { usersData, usersError });
+      
+      if (usersError) {
+        console.error('RPC error:', usersError);
+        throw usersError;
+      }
 
       // Get user roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
+      
+      console.log('Roles data:', { rolesData, rolesError });
       
       if (rolesError) throw rolesError;
 
@@ -78,6 +87,7 @@ const UserManagement = () => {
         };
       }) || [];
 
+      console.log('Combined users:', combinedUsers);
       setUsers(combinedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
