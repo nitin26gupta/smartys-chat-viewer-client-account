@@ -29,12 +29,17 @@ const Auth = () => {
 
   // Check for password recovery mode and invitation token on component mount
   useEffect(() => {
+    let recoveryDetected = false;
+
     // Listen for auth state changes to detect recovery mode
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth event:', event, 'Session:', session);
+      console.log('Hash:', window.location.hash);
       
       // When user comes from password recovery email link
       if (event === 'PASSWORD_RECOVERY') {
+        console.log('PASSWORD_RECOVERY event detected!');
+        recoveryDetected = true;
         setIsPasswordRecovery(true);
         toast({
           title: "Reset Your Password",
@@ -42,8 +47,10 @@ const Auth = () => {
         });
       }
       
-      // Also check if we have a session with reset=true
-      if (searchParams.get('reset') === 'true' && session) {
+      // If we have SIGNED_IN event and reset=true, might be recovery
+      if (event === 'SIGNED_IN' && searchParams.get('reset') === 'true') {
+        console.log('SIGNED_IN with reset=true detected!');
+        recoveryDetected = true;
         setIsPasswordRecovery(true);
       }
     });
@@ -57,17 +64,26 @@ const Auth = () => {
       checkIfFirstUser();
     }
     
-    // Initial check for recovery mode
-    const checkInitialRecovery = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // Check hash fragment for access_token (indicates password recovery)
+    const checkHashForRecovery = () => {
+      const hash = window.location.hash;
       const isReset = searchParams.get('reset') === 'true';
       
-      if (isReset && session) {
-        setIsPasswordRecovery(true);
+      console.log('Checking hash for recovery. Hash:', hash, 'Reset param:', isReset);
+      
+      // Check if hash contains type=recovery or if reset=true
+      if ((hash.includes('type=recovery') || isReset) && !recoveryDetected) {
+        console.log('Recovery mode detected from hash or query param!');
+        // Give a small delay to let Supabase process the auth
+        setTimeout(() => {
+          if (!recoveryDetected) {
+            setIsPasswordRecovery(true);
+          }
+        }, 500);
       }
     };
     
-    checkInitialRecovery();
+    checkHashForRecovery();
 
     return () => {
       subscription.unsubscribe();
