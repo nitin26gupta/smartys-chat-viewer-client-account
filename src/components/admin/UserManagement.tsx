@@ -53,56 +53,31 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      console.log('Fetching users directly...');
+      // Use the RPC function to get all users from auth.users
+      const { data: usersData, error: usersError } = await supabase
+        .rpc('get_all_users');
       
-      // First check if current user is admin
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      console.log('Current user:', currentUser);
-      
-      if (!currentUser) {
-        throw new Error('Not authenticated');
-      }
+      if (usersError) throw usersError;
 
-      // Check if user is admin
-      const { data: adminCheck, error: adminError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', currentUser.id)
-        .eq('role', 'admin')
-        .single();
-
-      console.log('Admin check:', { adminCheck, adminError });
-      
-      if (adminError || !adminCheck) {
-        throw new Error('Admin access required');
-      }
-
-      // Get user roles first
+      // Get user roles
       const { data: rolesData, error: rolesError } = await supabase
         .from('user_roles')
         .select('user_id, role');
       
-      console.log('Roles data:', { rolesData, rolesError });
       if (rolesError) throw rolesError;
 
-      // Create user list from roles data (since we can't access auth.users directly)
-      const combinedUsers = rolesData?.map((roleRecord: any) => {
-        // For now, we'll create a basic user object
-        // In a real scenario, you'd need the email from somewhere else
+      // Combine users with their roles
+      const combinedUsers = usersData?.map((authUser: any) => {
+        const userRole = rolesData?.find((r: any) => r.user_id === authUser.id);
         return {
-          id: roleRecord.user_id,
-          email: roleRecord.user_id === '35088805-b80d-4820-a035-bb3757398050' ? 'nitin26.gupta@gmail.com' : 
-                 roleRecord.user_id === '5f023f2c-1362-4321-9337-2735f4cf2efb' ? 'nitin162.gupta@gmail.com' : 
-                 'unknown@example.com',
-          display_name: roleRecord.user_id === '35088805-b80d-4820-a035-bb3757398050' ? 'nitin26.gupta' : 
-                        roleRecord.user_id === '5f023f2c-1362-4321-9337-2735f4cf2efb' ? 'nitin162.gupta' : 
-                        'unknown',
-          role: roleRecord.role,
-          created_at: new Date().toISOString(),
+          id: authUser.id,
+          email: authUser.email,
+          display_name: authUser.email.split('@')[0],
+          role: userRole?.role || 'user',
+          created_at: authUser.created_at,
         };
       }) || [];
 
-      console.log('Combined users:', combinedUsers);
       setUsers(combinedUsers);
     } catch (error) {
       console.error('Error fetching users:', error);
