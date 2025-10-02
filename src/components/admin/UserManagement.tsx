@@ -340,37 +340,41 @@ const UserManagement = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {users.map((teamMember) => (
-                <div key={teamMember.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium">{teamMember.display_name}</span>
-                      <Badge variant={teamMember.role === 'admin' ? 'default' : 'secondary'}>
-                        {teamMember.role}
-                      </Badge>
+              {users.map((teamMember) => {
+                const showDeleteButton = teamMember.id !== currentUser?.id;
+                console.log('User:', teamMember.email, 'ID:', teamMember.id, 'Current User ID:', currentUser?.id, 'Show Delete:', showDeleteButton);
+                return (
+                  <div key={teamMember.id} className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{teamMember.display_name}</span>
+                        <Badge variant={teamMember.role === 'admin' ? 'default' : 'secondary'}>
+                          {teamMember.role}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{teamMember.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        <Calendar className="inline h-3 w-3 mr-1" />
+                        Joined {new Date(teamMember.created_at).toLocaleDateString()}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground">{teamMember.email}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <Calendar className="inline h-3 w-3 mr-1" />
-                      Joined {new Date(teamMember.created_at).toLocaleDateString()}
-                    </p>
+                    {showDeleteButton && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeleteUser(teamMember.id)}
+                        disabled={deleteLoading === teamMember.id}
+                      >
+                        {deleteLoading === teamMember.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                   </div>
-                  {teamMember.id !== currentUser?.id && ( // Prevent self-deletion
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleDeleteUser(teamMember.id)}
-                      disabled={deleteLoading === teamMember.id}
-                    >
-                      {deleteLoading === teamMember.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
               {users.length === 0 && (
                 <p className="text-center text-muted-foreground py-4">No users found</p>
               )}
