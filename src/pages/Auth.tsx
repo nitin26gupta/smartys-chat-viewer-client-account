@@ -199,7 +199,7 @@ const Auth = () => {
     setLoading(true);
 
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: `https://smartys-support-chat.ekamapps.com/auth?reset=true`,
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     });
 
     if (error) {
