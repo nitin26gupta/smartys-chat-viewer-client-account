@@ -29,26 +29,26 @@ const Auth = () => {
 
   // Check for password recovery mode and invitation token on component mount
   useEffect(() => {
-    const checkRecoveryMode = async () => {
-      // Check if we're coming from a password reset link
-      const isReset = searchParams.get('reset') === 'true';
+    // Listen for auth state changes to detect recovery mode
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth event:', event, 'Session:', session);
       
-      if (isReset) {
-        // Check if there's an active recovery session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-          setIsPasswordRecovery(true);
-        } else {
-          toast({
-            title: "Link Expired",
-            description: "This password reset link has expired. Please request a new one.",
-            variant: "destructive",
-          });
-        }
+      // When user comes from password recovery email link
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordRecovery(true);
+        toast({
+          title: "Reset Your Password",
+          description: "Please enter your new password below.",
+        });
       }
-    };
+      
+      // Also check if we have a session with reset=true
+      if (searchParams.get('reset') === 'true' && session) {
+        setIsPasswordRecovery(true);
+      }
+    });
 
+    // Check for invitation token
     const token = searchParams.get('token');
     if (token) {
       setInvitationToken(token);
@@ -57,7 +57,21 @@ const Auth = () => {
       checkIfFirstUser();
     }
     
-    checkRecoveryMode();
+    // Initial check for recovery mode
+    const checkInitialRecovery = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const isReset = searchParams.get('reset') === 'true';
+      
+      if (isReset && session) {
+        setIsPasswordRecovery(true);
+      }
+    };
+    
+    checkInitialRecovery();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [searchParams]);
 
   const checkIfFirstUser = async () => {
