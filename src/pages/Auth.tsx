@@ -16,6 +16,9 @@ const Auth = () => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
   const [invitationToken, setInvitationToken] = useState('');
   const [validInvitation, setValidInvitation] = useState(false);
   const [isFirstUser, setIsFirstUser] = useState(false);
@@ -24,8 +27,28 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Check for invitation token and first user status on component mount
+  // Check for password recovery mode and invitation token on component mount
   useEffect(() => {
+    const checkRecoveryMode = async () => {
+      // Check if we're coming from a password reset link
+      const isReset = searchParams.get('reset') === 'true';
+      
+      if (isReset) {
+        // Check if there's an active recovery session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          setIsPasswordRecovery(true);
+        } else {
+          toast({
+            title: "Link Expired",
+            description: "This password reset link has expired. Please request a new one.",
+            variant: "destructive",
+          });
+        }
+      }
+    };
+
     const token = searchParams.get('token');
     if (token) {
       setInvitationToken(token);
@@ -33,6 +56,8 @@ const Auth = () => {
     } else {
       checkIfFirstUser();
     }
+    
+    checkRecoveryMode();
   }, [searchParams]);
 
   const checkIfFirstUser = async () => {
@@ -164,6 +189,53 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure both passwords are the same.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) {
+      toast({
+        title: "Error updating password",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Password updated!",
+        description: "Your password has been changed successfully.",
+      });
+      setIsPasswordRecovery(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      navigate('/');
+    }
+
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
@@ -181,6 +253,46 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {isPasswordRecovery ? (
+            <div className="space-y-4">
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-medium mb-2">Set New Password</h3>
+                <p className="text-sm text-muted-foreground">
+                  Enter your new password below
+                </p>
+              </div>
+              <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New Password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirm Password</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Update Password
+                </Button>
+              </form>
+            </div>
+          ) : (
           <Tabs defaultValue="signin" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">Sign In</TabsTrigger>
@@ -301,6 +413,7 @@ const Auth = () => {
               </form>
             </TabsContent>
           </Tabs>
+          )}
         </CardContent>
       </Card>
     </div>
