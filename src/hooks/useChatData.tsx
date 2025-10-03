@@ -413,5 +413,6 @@ export const useChatData = () => {
       fetchConversations();
     },
     loadPreviousMessages: (userId: string) => fetchMessages(userId, true),
+    refreshMessages: (userId: string) => fetchMessages(userId, false),
   };
 };

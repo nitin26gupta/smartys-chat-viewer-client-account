@@ -32,6 +32,7 @@ const Index = () => {
     sendFile,
     refreshUserInfo,
     loadPreviousMessages,
+    refreshMessages,
   } = useChatData();
 
   // Check if user is admin
@@ -200,15 +201,16 @@ const Index = () => {
           
           {/* Center - Chat Area */}
           <div className="flex-1 bg-background overflow-hidden">
-            <ChatArea
-              messages={messages}
-              loading={messagesLoading}
-              selectedConversation={selectedConversation}
-              userInfo={userInfo}
-              onSendReply={sendReply}
-              onSendFile={sendFile}
-              onLoadPrevious={loadPreviousMessages}
-            />
+              <ChatArea
+                messages={messages}
+                loading={messagesLoading}
+                selectedConversation={selectedConversation}
+                userInfo={userInfo}
+                onSendReply={sendReply}
+                onSendFile={sendFile}
+                onLoadPrevious={loadPreviousMessages}
+                onRefreshMessages={refreshMessages}
+              />
           </div>
           
           {/* Right Sidebar - User Info */}

@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send } from 'lucide-react';
+import { MessageSquare, Download, Reply, Image as ImageIcon, Bot, User, Send, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import MessageAttachment from './MessageAttachment';
@@ -89,6 +89,7 @@ interface ChatAreaProps {
   onSendReply: (userId: string, message: string) => void;
   onSendFile: (userId: string, fileUrl: string, fileName: string, fileType: string) => void;
   onLoadPrevious?: (userId: string) => void;
+  onRefreshMessages?: (userId: string) => void;
 }
 
 // Check if we can send regular messages (within 24-hour window)
@@ -111,11 +112,12 @@ const canSendMessage = (messages: ChatMessage[]) => {
   return hoursDiff <= 24;
 };
 
-export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onSendFile, onLoadPrevious }: ChatAreaProps) => {
+export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onSendFile, onLoadPrevious, onRefreshMessages }: ChatAreaProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [replyText, setReplyText] = useState('');
   const [isLoadingPrevious, setIsLoadingPrevious] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const { t } = useLanguage();
   
@@ -209,6 +211,16 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
   const handleFileUploaded = (fileUrl: string, fileName: string, fileType: string) => {
     if (!selectedConversation) return;
     onSendFile(selectedConversation, fileUrl, fileName, fileType);
+  };
+
+  const handleRefresh = async () => {
+    if (!selectedConversation || !onRefreshMessages || isRefreshing) return;
+    setIsRefreshing(true);
+    try {
+      await onRefreshMessages(selectedConversation);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -362,6 +374,16 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             >
               {messages.length} messages
             </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing || !onRefreshMessages}
+              className="border-gray-200 text-gray-600 hover:bg-gray-50"
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isRefreshing && "animate-spin")} />
+              Refresh
+            </Button>
             <Button
               variant="outline"
               size="sm"
