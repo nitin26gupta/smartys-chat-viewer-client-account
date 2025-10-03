@@ -34,111 +34,42 @@ export const useChatData = () => {
   const [messagesLoading, setMessagesLoading] = useState(false);
   const { toast } = useToast();
 
-  // Fetch conversations list
+  // Fetch conversations list using optimized database function
   const fetchConversations = async () => {
     try {
-      console.log('=== STARTING CONVERSATION FETCH ===');
-      console.log('Current user:', await supabase.auth.getUser());
-      console.log('BROWSER DEBUG: Fetching conversations...');
+      console.log('=== STARTING OPTIMIZED CONVERSATION FETCH ===');
       
-      // Step 1: Get all users from user_info table
-      const { data: allUsers, error: userError } = await supabase
-        .from('user_info')
-        .select('*');
+      // Use the database function to get all conversation summaries in one query
+      const { data, error } = await supabase
+        .rpc('get_conversation_summaries');
 
-      console.log('User query result:', { data: allUsers, error: userError });
-      if (userError) {
-        console.error('User fetch error:', userError);
-        throw userError;
+      if (error) {
+        console.error('Error fetching conversations:', error);
+        throw error;
       }
-      console.log('Found users:', allUsers?.length);
-      console.log('Users data:', allUsers);
 
-      if (!allUsers || allUsers.length === 0) {
-        console.log('No users found, setting empty conversations');
+      if (!data || data.length === 0) {
+        console.log('No conversations found');
         setConversations([]);
         return;
       }
 
-      const conversations: ConversationSummary[] = [];
+      console.log(`✓ Loaded ${data.length} conversations in one query`);
 
-      // Step 2: For each user, get their sessions and messages
-      for (const user of allUsers) {
-        console.log(`\n--- Processing user: ${user.user_name} (ID: ${user.user_id}) ---`);
-        
-        // Get all sessions for this user
-        const { data: userSessions, error: sessionError } = await supabase
-          .from('session_user_mapping')
-          .select('session_id')
-          .eq('user_id', user.user_id);
-
-        console.log(`Session query result for user ${user.user_id}:`, { data: userSessions, error: sessionError });
-        if (sessionError) {
-          console.error('Error fetching sessions for user:', user.user_id, sessionError);
-          continue;
-        }
-
-        if (!userSessions || userSessions.length === 0) {
-          console.log(`No sessions found for user ${user.user_name}`);
-          continue;
-        }
-
-        console.log(`Found ${userSessions.length} sessions for ${user.user_name}:`, userSessions.map(s => s.session_id));
-
-        // Get all messages for this user's sessions
-        const sessionIds = userSessions.map(s => s.session_id);
-        const { data: userMessages, error: messageError } = await supabase
-          .from('smartys_chat_histories')
-          .select('*, timestamp')
-          .in('session_id', sessionIds)
-          .order('id', { ascending: true });
-
-        if (messageError) {
-          console.error('Error fetching messages for user:', user.user_id, messageError);
-          continue;
-        }
-
-        if (!userMessages || userMessages.length === 0) {
-          console.log(`No messages found for user ${user.user_name}`);
-          continue;
-        }
-
-        console.log(`Found ${userMessages.length} messages for ${user.user_name}`);
-
-        // Get the latest message for preview
-        const latestMessage = userMessages[userMessages.length - 1];
-        const message = latestMessage.message as any;
-
-        // Create conversation summary
-        const conversation: ConversationSummary = {
-          user_id: user.user_id,
-          last_message: message?.content || (message?.type === 'image' ? '📷 Image' : 'Message'),
-          last_message_time: latestMessage.timestamp || new Date().toISOString(),
-          message_count: userMessages.length,
-          user_info: {
-            user_id: user.user_id,
-            user_name: user.user_name || 'Unknown',
-            phone_number: user.phone_number || '',
-            agent_on: user.agent_on ?? true,
-          },
-          session_ids: sessionIds,
-        };
-
-        conversations.push(conversation);
-        console.log(`✓ Added conversation for ${user.user_name}: ${userMessages.length} messages`);
-      }
-
-      console.log('\n=== FINAL RESULTS ===');
-      conversations.forEach(conv => {
-        console.log(`${conv.user_info?.user_name}: ${conv.message_count} messages`);
-      });
-
-      // Sort conversations by latest message time (most recent first)
-      conversations.sort((a, b) => {
-        const timeA = new Date(a.last_message_time).getTime();
-        const timeB = new Date(b.last_message_time).getTime();
-        return timeB - timeA; // Descending order (most recent first)
-      });
+      // Transform the database result to match our ConversationSummary interface
+      const conversations: ConversationSummary[] = data.map((row: any) => ({
+        user_id: row.user_id,
+        last_message: row.last_message || 'No messages',
+        last_message_time: row.last_message_time,
+        message_count: Number(row.message_count),
+        user_info: {
+          user_id: row.user_id,
+          user_name: row.user_name || 'Unknown',
+          phone_number: row.phone_number || '',
+          agent_on: row.agent_on ?? true,
+        },
+        session_ids: row.session_ids || [],
+      }));
 
       setConversations(conversations);
     } catch (error) {

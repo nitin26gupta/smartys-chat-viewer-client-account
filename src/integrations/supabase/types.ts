@@ -256,6 +256,19 @@ export type Database = {
           id: string
         }[]
       }
+      get_conversation_summaries: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          agent_on: boolean
+          last_message: string
+          last_message_time: string
+          message_count: number
+          phone_number: string
+          session_ids: string[]
+          user_id: string
+          user_name: string
+        }[]
+      }
       halfvec_avg: {
         Args: { "": number[] }
         Returns: unknown
