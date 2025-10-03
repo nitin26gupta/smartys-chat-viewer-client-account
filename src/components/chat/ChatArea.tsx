@@ -86,6 +86,7 @@ interface ChatAreaProps {
   loading?: boolean;
   selectedConversation: string | null;
   userInfo: UserInfo | null;
+  messageCount?: number;
   onSendReply: (userId: string, message: string) => void;
   onSendFile: (userId: string, fileUrl: string, fileName: string, fileType: string) => void;
   onLoadPrevious?: (userId: string) => void;
@@ -112,7 +113,7 @@ const canSendMessage = (messages: ChatMessage[]) => {
   return hoursDiff <= 24;
 };
 
-export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, onSendReply, onSendFile, onLoadPrevious, onRefreshMessages }: ChatAreaProps) => {
+export const ChatArea = ({ messages, loading = false, selectedConversation, userInfo, messageCount, onSendReply, onSendFile, onLoadPrevious, onRefreshMessages }: ChatAreaProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [replyText, setReplyText] = useState('');
@@ -372,7 +373,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
               variant="outline" 
               className="bg-gray-50 text-gray-600 border-gray-200"
             >
-              {messages.length} messages
+              {messageCount || messages.length} messages
             </Badge>
             <Button
               variant="outline"

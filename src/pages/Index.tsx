@@ -206,6 +206,7 @@ const Index = () => {
                 loading={messagesLoading}
                 selectedConversation={selectedConversation}
                 userInfo={userInfo}
+                messageCount={conversations.find(conv => conv.user_id === selectedConversation)?.message_count}
                 onSendReply={sendReply}
                 onSendFile={sendFile}
                 onLoadPrevious={loadPreviousMessages}
