@@ -87,14 +87,17 @@ const UserManagement = () => {
         return;
       }
 
-      // Combine users with their roles
+      // Combine users with their roles (prioritize admin role if user has multiple roles)
       const combinedUsers = usersData?.map((authUser: any) => {
-        const userRole = rolesData?.find((r: any) => r.user_id === authUser.id);
+        const userRoles = rolesData?.filter((r: any) => r.user_id === authUser.id);
+        // Prioritize admin role over user role
+        const primaryRole = userRoles?.find((r: any) => r.role === 'admin') || userRoles?.[0];
+        
         return {
           id: authUser.id,
           email: authUser.email,
           display_name: authUser.email.split('@')[0],
-          role: userRole?.role || 'user',
+          role: primaryRole?.role || 'user',
           created_at: authUser.created_at,
         };
       }) || [];
