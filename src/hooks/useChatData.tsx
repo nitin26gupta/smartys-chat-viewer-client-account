@@ -224,8 +224,7 @@ export const useChatData = () => {
         const webhookPayload = {
           mobile_number: conversation.user_info?.phone_number || '',
           message: replyText,
-          type: 'text',
-          ai: false,
+          type: 'ai',
           source: 'human-agent'
         };
 

@@ -125,8 +125,7 @@ export const UserInfoPanel = ({
           customer_name: userInfo.user_name,
           phone_number: userInfo.phone_number,
           template_name: templateName,
-          type: 'template',
-          ai: false,
+          type: 'ai',
           source: 'human-agent'
         }),
       });
