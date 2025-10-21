@@ -124,7 +124,10 @@ export const UserInfoPanel = ({
         body: JSON.stringify({
           customer_name: userInfo.user_name,
           phone_number: userInfo.phone_number,
-          template_name: templateName
+          template_name: templateName,
+          type: 'template',
+          ai: false,
+          source: 'human-agent'
         }),
       });
 

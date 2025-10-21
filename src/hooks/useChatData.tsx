@@ -223,7 +223,10 @@ export const useChatData = () => {
       try {
         const webhookPayload = {
           mobile_number: conversation.user_info?.phone_number || '',
-          message: replyText
+          message: replyText,
+          type: 'text',
+          ai: false,
+          source: 'human-agent'
         };
 
         await fetch('https://smartys.app.n8n.cloud/webhook/0443a6c9-8efa-4a29-ba41-06b9bad558dd', {
