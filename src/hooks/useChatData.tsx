@@ -276,12 +276,13 @@ export const useChatData = () => {
         .insert({
           session_id: conversation.session_ids[0],
           message: {
-            type: 'file',
+            type: 'ai',
+            sender_category: 'human_agent',
             file_url: fileUrl,
             file_name: fileName,
             file_type: fileType,
             content: `📎 ${fileName}`,
-            sender: 'agent'
+            source: 'human-agent'
           }
         });
 
