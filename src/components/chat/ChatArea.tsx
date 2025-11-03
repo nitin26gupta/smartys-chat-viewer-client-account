@@ -236,6 +236,15 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
     const isImage = msg?.type === 'image';
     const isFile = msg?.type === 'file' || (msg?.file_url && msg?.file_name);
     
+    // Pass isHumanAgent to MessageAttachment for proper styling
+    const attachmentProps = {
+      url: msg.file_url || msg.url,
+      fileName: msg.file_name || msg.filename || 'Unknown file',
+      fileType: msg.file_type || msg.mimetype || 'application/octet-stream',
+      fileSize: msg.file_size,
+      isHumanAgent
+    };
+    
     return (
       <div className={cn("flex items-start space-x-3 animate-fade-in", (isAI || isHumanAgent) ? "flex-row" : "flex-row-reverse space-x-reverse")}>
         <div className={cn(
@@ -257,12 +266,7 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             isHumanAgent ? "bg-green-500 text-white" : isAI ? "bg-muted" : "bg-primary text-primary-foreground"
           )}>
             {isFile ? (
-              <MessageAttachment
-                url={msg.file_url || msg.url}
-                fileName={msg.file_name || msg.filename || 'Unknown file'}
-                fileType={msg.file_type || msg.mimetype || 'application/octet-stream'}
-                fileSize={msg.file_size}
-              />
+              <MessageAttachment {...attachmentProps} />
             ) : isImage ? (
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
@@ -418,10 +422,12 @@ export const ChatArea = ({ messages, loading = false, selectedConversation, user
             </div>
           </div>
         ) : (
-          messages.map((message) => {
+        messages.map((message) => {
             const msg = message.message as any;
             const isAI = msg?.type === 'ai' && msg?.sender_category !== 'human_agent';
-            const isHumanAgent = msg?.type === 'ai' && msg?.sender_category === 'human_agent';
+            // Detect human agent messages: new format OR old format with sender: 'agent'
+            const isHumanAgent = (msg?.type === 'ai' && msg?.sender_category === 'human_agent') || 
+                                 (msg?.sender === 'agent' || msg?.source === 'human-agent');
             return (
               <MessageBubble
                 key={message.id}

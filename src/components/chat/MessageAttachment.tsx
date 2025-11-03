@@ -7,13 +7,15 @@ interface MessageAttachmentProps {
   fileName: string;
   fileType: string;
   fileSize?: number;
+  isHumanAgent?: boolean;
 }
 
 const MessageAttachment: React.FC<MessageAttachmentProps> = ({
   url,
   fileName,
   fileType,
-  fileSize
+  fileSize,
+  isHumanAgent = false
 }) => {
   const isImage = fileType.startsWith('image/');
   const isPdf = fileType === 'application/pdf';
@@ -64,13 +66,15 @@ const MessageAttachment: React.FC<MessageAttachmentProps> = ({
             <ExternalLink className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         </div>
-        <div className="flex items-center justify-between mt-2 p-2 bg-muted/50 rounded">
+        <div className={`flex items-center justify-between mt-2 p-2 rounded ${isHumanAgent ? 'bg-green-600/20' : 'bg-muted/50'}`}>
           <div className="flex items-center space-x-2 min-w-0 flex-1">
-            {getFileIcon()}
+            <div className={isHumanAgent ? 'text-black' : ''}>
+              {getFileIcon()}
+            </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium truncate">{fileName}</p>
+              <p className={`text-xs font-medium truncate ${isHumanAgent ? 'text-black' : ''}`}>{fileName}</p>
               {fileSize && (
-                <p className="text-xs text-muted-foreground">{formatFileSize(fileSize)}</p>
+                <p className={`text-xs ${isHumanAgent ? 'text-black/70' : 'text-muted-foreground'}`}>{formatFileSize(fileSize)}</p>
               )}
             </div>
           </div>
@@ -81,7 +85,7 @@ const MessageAttachment: React.FC<MessageAttachmentProps> = ({
               e.stopPropagation();
               handleDownload();
             }}
-            className="h-6 w-6 p-0"
+            className={`h-6 w-6 p-0 ${isHumanAgent ? 'hover:bg-green-600/30 text-black' : ''}`}
           >
             <Download className="h-3 w-3" />
           </Button>
@@ -92,17 +96,17 @@ const MessageAttachment: React.FC<MessageAttachmentProps> = ({
 
   return (
     <div className="max-w-xs">
-      <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg border">
-        <div className="flex-shrink-0">
+      <div className={`flex items-center space-x-3 p-3 rounded-lg border ${isHumanAgent ? 'bg-green-600/20 border-green-600/30' : 'bg-muted border-border'}`}>
+        <div className={`flex-shrink-0 ${isHumanAgent ? 'text-black' : ''}`}>
           {getFileIcon()}
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium truncate">{fileName}</p>
+          <p className={`text-sm font-medium truncate ${isHumanAgent ? 'text-black' : ''}`}>{fileName}</p>
           {fileSize && (
-            <p className="text-xs text-muted-foreground">{formatFileSize(fileSize)}</p>
+            <p className={`text-xs ${isHumanAgent ? 'text-black/70' : 'text-muted-foreground'}`}>{formatFileSize(fileSize)}</p>
           )}
           {isPdf && (
-            <p className="text-xs text-muted-foreground">PDF Document</p>
+            <p className={`text-xs ${isHumanAgent ? 'text-black/70' : 'text-muted-foreground'}`}>PDF Document</p>
           )}
         </div>
         <div className="flex space-x-1">
@@ -110,7 +114,7 @@ const MessageAttachment: React.FC<MessageAttachmentProps> = ({
             variant="ghost"
             size="sm"
             onClick={() => window.open(url, '_blank')}
-            className="h-6 w-6 p-0"
+            className={`h-6 w-6 p-0 ${isHumanAgent ? 'hover:bg-green-600/30 text-black' : ''}`}
           >
             <ExternalLink className="h-3 w-3" />
           </Button>
@@ -118,7 +122,7 @@ const MessageAttachment: React.FC<MessageAttachmentProps> = ({
             variant="ghost"
             size="sm"
             onClick={handleDownload}
-            className="h-6 w-6 p-0"
+            className={`h-6 w-6 p-0 ${isHumanAgent ? 'hover:bg-green-600/30 text-black' : ''}`}
           >
             <Download className="h-3 w-3" />
           </Button>
